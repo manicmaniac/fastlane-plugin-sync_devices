@@ -1,0 +1,30 @@
+[
+  {
+    "id": null,
+    "name": "NAME1",
+    "platform": "IOS",
+    "status": "ENABLED",
+    "udid": "01234567-89ABCDEF01234567"
+  },
+  {
+    "id": null,
+    "name": "NAME2",
+    "platform": "IOS",
+    "status": "ENABLED",
+    "udid": "abcdef0123456789abcdef0123456789abcdef01"
+  },
+  {
+    "id": null,
+    "name": "NAME3",
+    "platform": "MAC_OS",
+    "status": "ENABLED",
+    "udid": "01234567-89AB-CDEF-0123-4567890ABCDE"
+  },
+  {
+    "id": null,
+    "name": "NAME4",
+    "platform": "MAC_OS",
+    "status": "ENABLED",
+    "udid": "ABCDEF01-2345-6789-ABCD-EF0123456789"
+  }
+]

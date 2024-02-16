@@ -1,0 +1,3 @@
+lane :test do
+  sync_devices(devices_file: 'spec/support/fixtures/multiple-device-upload.txt')
+end

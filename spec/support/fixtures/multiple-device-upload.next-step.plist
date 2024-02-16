@@ -1,0 +1,24 @@
+{
+  "Device UDIDs" = (
+    {
+      deviceIdentifier = "01234567-89ABCDEF01234567";
+      deviceName = NAME1;
+      devicePlatform = ios;
+    },
+    {
+      deviceIdentifier = "abcdef0123456789abcdef0123456789abcdef01";
+      deviceName = NAME2;
+      devicePlatform = ios;
+    },
+    {
+      deviceIdentifier = "01234567-89AB-CDEF-0123-4567890ABCDE";
+      deviceName = NAME3;
+      devicePlatform = mac;
+    },
+    {
+      deviceIdentifier = "ABCDEF01-2345-6789-ABCD-EF0123456789";
+      deviceName = NAME4;
+      devicePlatform = mac;
+    }
+  );
+}

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Device UDIDs</key>
+	<array>
+		<dict>
+			<key>deviceIdentifier</key>
+			<string>01234567-89ABCDEF01234567</string>
+			<key>deviceName</key>
+			<string>NAME1</string>
+			<key>devicePlatform</key>
+			<string>ios</string>
+		</dict>
+		<dict>
+			<key>deviceIdentifier</key>
+			<string>abcdef0123456789abcdef0123456789abcdef01</string>
+			<key>deviceName</key>
+			<string>NAME2</string>
+			<key>devicePlatform</key>
+			<string>ios</string>
+		</dict>
+		<dict>
+			<key>deviceIdentifier</key>
+			<string>01234567-89AB-CDEF-0123-4567890ABCDE</string>
+			<key>deviceName</key>
+			<string>NAME3</string>
+			<key>devicePlatform</key>
+			<string>mac</string>
+		</dict>
+		<dict>
+			<key>deviceIdentifier</key>
+			<string>ABCDEF01-2345-6789-ABCD-EF0123456789</string>
+			<key>deviceName</key>
+			<string>NAME4</string>
+			<key>devicePlatform</key>
+			<string>mac</string>
+		</dict>
+	</array>
+</dict>
+</plist>
