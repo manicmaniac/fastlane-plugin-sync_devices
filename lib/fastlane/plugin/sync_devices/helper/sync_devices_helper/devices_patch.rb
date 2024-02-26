@@ -20,7 +20,11 @@ module Fastlane
           old_device_by_udid.each do |old_udid, old_device|
             new_device = new_device_by_udid[old_udid]
             unless new_device
-              @commands << Command::Disable.new(old_device)
+              if old_device.enabled?
+                @commands << Command::Disable.new(old_device)
+              else
+                @commands << Command::Noop.new(old_device)
+              end
               next
             end
 

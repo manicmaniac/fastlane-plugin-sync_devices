@@ -38,6 +38,20 @@ module Fastlane::Helper::SyncDevicesHelper
         end
       end
 
+      context 'when disabled device is removed from list' do
+        old_devices = [
+          Device.new('0', { name: 'NAME0', udid: 'UDID0', platform: Platform::IOS, status: Device::Status::DISABLED })
+        ]
+        new_devices = []
+
+        it 'raises an error' do
+          patch = described_class.new(old_devices, new_devices)
+          expect(patch.commands).to contain_exactly(
+            kind_of(Command::Noop)
+          )
+        end
+      end
+
       context 'when new devices change platform' do
         old_devices = [
           Device.new('0', { name: 'NAME0', udid: 'UDID0', platform: Platform::IOS, status: Device::Status::ENABLED })
