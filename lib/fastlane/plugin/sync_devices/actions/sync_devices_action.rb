@@ -1,6 +1,6 @@
 require 'credentials_manager'
 require 'fastlane/action'
-require 'fastlane/plugin/sync_devices/helper/sync_devices_helper'
+require_relative '../helper/sync_devices_helper'
 
 module Fastlane
   module Actions

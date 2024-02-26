@@ -1,4 +1,4 @@
-require 'fastlane/plugin/sync_devices/helper/sync_devices_helper/command'
+require_relative 'command'
 
 module Fastlane
   UI = FastlaneCore::UI unless Fastlane.const_defined?(:UI)
