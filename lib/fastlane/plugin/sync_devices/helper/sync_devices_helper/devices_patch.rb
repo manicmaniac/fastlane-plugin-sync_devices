@@ -43,6 +43,10 @@ module Fastlane
               @commands << Command::Create.new(new_device)
             end
           end
+          @commands.sort_by! do |command|
+            device = command.old_device || command.new_device
+            [device.name.downcase, device.id&.downcase]
+          end
         end
 
         # @param [Boolean] dry_run

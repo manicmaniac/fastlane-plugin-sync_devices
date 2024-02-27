@@ -4,47 +4,49 @@ module Fastlane
   module Helper
     module SyncDevicesHelper
       module Command
-        class Noop
-          attr_reader :device
+        Base = Struct.new(:old_device, :new_device, :description) do
+          def run
+            raise NotImplementedError
+          end
+        end
 
+        class Noop < Base
           def initialize(device)
-            @device = device
+            super(
+              old_device: device,
+              new_device: device,
+              description: "Skipped #{device.name} (#{device.udid})"
+            )
           end
 
           def run
             # Does nothing.
           end
-
-          def description
-            "Skipped #{device.name} (#{device.udid})"
-          end
         end
 
-        class Disable
-          attr_reader :device
-
+        class Disable < Base
           def initialize(device)
-            @device = device
+            super(
+              old_device: device,
+              new_device: nil,
+              description: "Disabled #{device.name} (#{device.udid})"
+            )
           end
 
           def run
-            Spaceship::ConnectAPI::Device.disable(device.udid)
-          end
-
-          def description
-            "Disabled #{device.name} (#{device.udid})"
+            Spaceship::ConnectAPI::Device.disable(old_device.udid)
           end
         end
 
-        class Modify
-          attr_reader :old_device, :new_device, :description
-
+        class Modify < Base
           def initialize(old_device, new_device)
             raise 'Old and new devices must have the same UDID.' if old_device.udid != new_device.udid
 
-            @old_device = old_device
-            @new_device = new_device
-            @description = build_description
+            super(
+              old_device: old_device,
+              new_device: new_device,
+              description: nil
+            )
           end
 
           def run
@@ -56,15 +58,21 @@ module Fastlane
           end
 
           def enabled?
+            return false unless old_device && new_device
+
             old_device.status != new_device.status && new_device.status == Spaceship::ConnectAPI::Device::Status::ENABLED
           end
 
           def disabled?
-            old_device.status != new_device.status && new_device.status == Spaceship::ConnectAPI::Device::Status::DISABLED
+            old_device.enabled? && !new_device.enabled?
           end
 
           def renamed?
             old_device.name != new_device.name
+          end
+
+          def description
+            @description ||= build_description
           end
 
           private
@@ -89,23 +97,21 @@ module Fastlane
           end
         end
 
-        class Create
-          attr_reader :device
-
+        class Create < Base
           def initialize(device)
-            @device = device
+            super(
+              old_device: nil,
+              new_device: device,
+              description: "Created #{device.name} (#{device.udid})"
+            )
           end
 
           def run
             Spaceship::ConnectAPI::Device.create(
-              name: device.name,
-              platform: device.platform,
-              udid: device.udid
+              name: new_device.name,
+              platform: new_device.platform,
+              udid: new_device.udid
             )
-          end
-
-          def description
-            "Created #{device.name} (#{device.udid})"
           end
         end
       end
