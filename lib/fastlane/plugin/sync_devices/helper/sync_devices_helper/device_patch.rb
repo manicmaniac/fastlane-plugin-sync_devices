@@ -15,27 +15,27 @@ module Fastlane
 
         # @return [Boolean]
         def renamed?
-          old_device != nil && new_device != nil && old_device.name != new_device.name
+          !!old_device && !!new_device && old_device.name != new_device.name
         end
 
         # @return [Boolean]
         def enabled?
-          old_device != nil && !old_device.enabled? && !!new_device&.enabled?
+          !!old_device && !old_device.enabled? && !!new_device&.enabled?
         end
 
         # @return [Boolean]
         def disabled?
-          old_device != nil && old_device.enabled? && !new_device&.enabled?
+          !!old_device && old_device.enabled? && !new_device&.enabled?
         end
 
         # @return [Boolean]
         def created?
-          old_device == nil && !!new_device&.enabled?
+          old_device.nil? && !!new_device&.enabled?
         end
 
         # @return [Boolean]
         def platform_changed?
-          old_device != nil && new_device != nil && old_device.platform != new_device.platform
+          !!old_device && !!new_device && old_device.platform != new_device.platform
         end
 
         # @return [Command::Base]
