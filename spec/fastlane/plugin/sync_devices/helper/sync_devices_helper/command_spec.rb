@@ -53,125 +53,111 @@ module Fastlane::Helper::SyncDevicesHelper::Command
     end
   end
 
-  describe Modify do
+  describe Enable do
+    let(:device) do
+      Spaceship::ConnectAPI::Device.new('ID', {
+        name: 'NAME',
+        udid: 'UDID',
+        platform: Spaceship::ConnectAPI::Platform::IOS,
+        status: Spaceship::ConnectAPI::Device::Status::DISABLED
+      })
+    end
+
     describe '#run' do
-      let(:device) do
-        Spaceship::ConnectAPI::Device.new('ID', {
-          name: 'NAME',
-          udid: 'UDID',
-          platform: Spaceship::ConnectAPI::Platform::IOS,
-          status: Spaceship::ConnectAPI::Device::Status::ENABLED
-        })
-      end
+      it 'enables the device' do
+        allow(Spaceship::ConnectAPI::Device).to receive(:enable)
 
-      let(:new_device) do
-        Spaceship::ConnectAPI::Device.new(nil, {
-          name: 'NEW_NAME',
-          udid: 'UDID',
-          status: Spaceship::ConnectAPI::Device::Status::DISABLED
-        })
-      end
+        described_class.new(device).run
 
-      it 'modifies the device' do
-        allow(Spaceship::ConnectAPI::Device).to receive(:modify)
-
-        described_class.new(device, new_device).run
-
-        expect(Spaceship::ConnectAPI::Device).to have_received(:modify)
-          .with('UDID', enabled: false, new_name: 'NEW_NAME')
-          .once
+        expect(Spaceship::ConnectAPI::Device).to have_received(:enable).with('UDID').once
       end
     end
 
     describe '#description' do
-      subject { described_class.new(device, new_device).description }
-
-      context 'when disabled and renamed' do
-        let(:device) do
-          Spaceship::ConnectAPI::Device.new('ID', {
-            name: 'NAME',
-            udid: 'UDID',
-            platform: Spaceship::ConnectAPI::Platform::IOS,
-            status: Spaceship::ConnectAPI::Device::Status::ENABLED
-          })
-        end
-
-        let(:new_device) do
-          Spaceship::ConnectAPI::Device.new('ID', {
-            name: 'NEW_NAME',
-            udid: 'UDID',
-            platform: Spaceship::ConnectAPI::Platform::IOS,
-            status: Spaceship::ConnectAPI::Device::Status::DISABLED
-          })
-        end
-
-        it { is_expected.to eq 'Disabled and renamed from NAME to NEW_NAME (UDID)' }
+      it 'returns description' do
+        expect(described_class.new(device).description).to eq 'Enabled NAME (UDID)'
       end
+    end
+  end
 
-      context 'when enabled' do
-        let(:device) do
-          Spaceship::ConnectAPI::Device.new('ID', {
-            name: 'NAME',
-            udid: 'UDID',
-            platform: Spaceship::ConnectAPI::Platform::IOS,
-            status: Spaceship::ConnectAPI::Device::Status::DISABLED
-          })
-        end
+  describe Rename do
+    let(:device) do
+      Spaceship::ConnectAPI::Device.new('ID', {
+        name: 'NAME',
+        udid: 'UDID',
+        platform: Spaceship::ConnectAPI::Platform::IOS,
+        status: Spaceship::ConnectAPI::Device::Status::ENABLED
+      })
+    end
 
-        let(:new_device) do
-          Spaceship::ConnectAPI::Device.new('ID', {
-            name: 'NAME',
-            udid: 'UDID',
-            platform: Spaceship::ConnectAPI::Platform::IOS,
-            status: Spaceship::ConnectAPI::Device::Status::ENABLED
-          })
-        end
+    describe '#run' do
+      it 'renames the device' do
+        allow(Spaceship::ConnectAPI::Device).to receive(:rename)
 
-        it { is_expected.to eq 'Enabled NAME (UDID)' }
+        described_class.new(device, 'NEW_NAME').run
+
+        expect(Spaceship::ConnectAPI::Device).to have_received(:rename).with('UDID', 'NEW_NAME').once
       end
+    end
 
-      context 'when enabled and renamed' do
-        let(:device) do
-          Spaceship::ConnectAPI::Device.new('ID', {
-            name: 'NAME',
-            udid: 'UDID',
-            platform: Spaceship::ConnectAPI::Platform::IOS,
-            status: Spaceship::ConnectAPI::Device::Status::DISABLED
-          })
-        end
-
-        let(:new_device) do
-          Spaceship::ConnectAPI::Device.new('ID', {
-            name: 'NEW_NAME',
-            udid: 'UDID',
-            platform: Spaceship::ConnectAPI::Platform::IOS,
-            status: Spaceship::ConnectAPI::Device::Status::ENABLED
-          })
-        end
-
-        it { is_expected.to eq 'Enabled and renamed from NAME to NEW_NAME (UDID)' }
+    describe '#description' do
+      it 'returns description' do
+        expect(described_class.new(device, 'NEW_NAME').description).to eq 'Renamed NAME to NEW_NAME (UDID)'
       end
+    end
+  end
 
-      context 'when renamed' do
-        let(:device) do
-          Spaceship::ConnectAPI::Device.new('ID', {
-            name: 'NAME',
-            udid: 'UDID',
-            platform: Spaceship::ConnectAPI::Platform::IOS,
-            status: Spaceship::ConnectAPI::Device::Status::ENABLED
-          })
-        end
+  describe DisableAndRename do
+    let(:device) do
+      Spaceship::ConnectAPI::Device.new('ID', {
+        name: 'NAME',
+        udid: 'UDID',
+        platform: Spaceship::ConnectAPI::Platform::IOS,
+        status: Spaceship::ConnectAPI::Device::Status::ENABLED
+      })
+    end
 
-        let(:new_device) do
-          Spaceship::ConnectAPI::Device.new('ID', {
-            name: 'NEW_NAME',
-            udid: 'UDID',
-            platform: Spaceship::ConnectAPI::Platform::IOS,
-            status: Spaceship::ConnectAPI::Device::Status::ENABLED
-          })
-        end
+    describe '#run' do
+      it 'disables and renames the device' do
+        allow(Spaceship::ConnectAPI::Device).to receive(:modify)
 
-        it { is_expected.to eq 'Renamed from NAME to NEW_NAME (UDID)' }
+        described_class.new(device, 'NEW_NAME').run
+
+        expect(Spaceship::ConnectAPI::Device).to have_received(:modify).with('UDID', enabled: false, new_name: 'NEW_NAME').once
+      end
+    end
+
+    describe '#description' do
+      it 'returns description' do
+        expect(described_class.new(device, 'NEW_NAME').description).to eq 'Disabled and renamed NAME to NEW_NAME (UDID)'
+      end
+    end
+  end
+
+  describe EnableAndRename do
+    let(:device) do
+      Spaceship::ConnectAPI::Device.new('ID', {
+        name: 'NAME',
+        udid: 'UDID',
+        platform: Spaceship::ConnectAPI::Platform::IOS,
+        status: Spaceship::ConnectAPI::Device::Status::DISABLED
+      })
+    end
+
+    describe '#run' do
+      it 'enables and renames the device' do
+        allow(Spaceship::ConnectAPI::Device).to receive(:modify)
+
+        described_class.new(device, 'NEW_NAME').run
+
+        expect(Spaceship::ConnectAPI::Device).to have_received(:modify)
+          .with('UDID', enabled: true, new_name: 'NEW_NAME').once
+      end
+    end
+
+    describe '#description' do
+      it 'returns description' do
+        expect(described_class.new(device, 'NEW_NAME').description).to eq 'Enabled and renamed NAME to NEW_NAME (UDID)'
       end
     end
   end

@@ -28,8 +28,8 @@ module Fastlane::Helper::SyncDevicesHelper
           [15:04:05]: (dry-run) Skipped NAME0 (UDID0)
           [15:04:05]: (dry-run) Disabled NAME1 (UDID1)
           [15:04:05]: (dry-run) Enabled NAME2 (UDID2)
-          [15:04:05]: (dry-run) Disabled and renamed from NAME3 to NEW_NAME3 (UDID3)
-          [15:04:05]: (dry-run) Renamed from NAME4 to NEW_NAME4 (UDID4)
+          [15:04:05]: (dry-run) Disabled and renamed NAME3 to NEW_NAME3 (UDID3)
+          [15:04:05]: (dry-run) Renamed NAME4 to NEW_NAME4 (UDID4)
           [15:04:05]: (dry-run) Created NAME5 (UDID5)
           LOG
 

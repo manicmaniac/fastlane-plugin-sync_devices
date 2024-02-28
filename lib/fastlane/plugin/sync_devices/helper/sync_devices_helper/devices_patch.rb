@@ -1,4 +1,4 @@
-require_relative 'command'
+require_relative 'device_patch'
 
 module Fastlane
   UI = FastlaneCore::UI unless Fastlane.const_defined?(:UI)
@@ -16,37 +16,14 @@ module Fastlane
 
           old_device_by_udid = old_devices.group_by { |d| d.udid.downcase }.transform_values(&:first)
           new_device_by_udid = new_devices.group_by { |d| d.udid.downcase }.transform_values(&:first)
-          @commands = []
-          old_device_by_udid.each do |old_udid, old_device|
-            new_device = new_device_by_udid[old_udid]
-            unless new_device
-              if old_device.enabled?
-                @commands << Command::Disable.new(old_device)
-              else
-                @commands << Command::Noop.new(old_device)
-              end
-              next
+          @commands = (old_device_by_udid.keys + new_device_by_udid.keys)
+            .sort
+            .uniq
+            .map do |udid|
+              old_device = old_device_by_udid[udid]
+              new_device = new_device_by_udid[udid]
+              DevicePatch.new(old_device, new_device).command
             end
-
-            if old_device.platform != new_device.platform
-              raise UnsupportedOperation.change_platform(old_device, new_device)
-            end
-
-            if old_device.name == new_device.name && old_device.status == new_device.status
-              @commands << Command::Noop.new(new_device)
-            else
-              @commands << Command::Modify.new(old_device, new_device)
-            end
-          end
-          new_device_by_udid.each do |new_udid, new_device|
-            unless old_device_by_udid.key?(new_udid)
-              @commands << Command::Create.new(new_device)
-            end
-          end
-          @commands.sort_by! do |command|
-            device = command.old_device || command.new_device
-            [device.name.downcase, device.id&.downcase]
-          end
         end
 
         # @param [Boolean] dry_run
@@ -59,30 +36,6 @@ module Fastlane
               UI.message(command.description)
             end
           end
-        end
-      end
-
-      class UnsupportedOperation < StandardError
-        attr_reader :old_device, :new_device
-
-        # @param [String] message
-        # @param [Spaceship::ConnectAPI::Device] old_device
-        # @param [Spaceship::ConnectAPI::Device] new_device
-        def initialize(message, old_device, new_device)
-          super(message)
-          @old_device = old_device
-          @new_device = new_device
-        end
-
-        # @param [Spaceship::ConnectAPI::Device] old_device
-        # @param [Spaceship::ConnectAPI::Device] new_device
-        # @return [UnsupportedOperation]
-        def self.change_platform(old_device, new_device)
-          new(
-            "Channot change platform of the device '#{new_device.udid}' (#{old_device.platform} -> #{new_device.platform})",
-            old_device,
-            new_device
-          )
         end
       end
     end
