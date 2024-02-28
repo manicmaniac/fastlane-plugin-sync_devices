@@ -10,20 +10,20 @@ module Fastlane
 
         # @param [Array<Spaceship::ConnectAPI::Device>] old_devices
         # @param [Array<Spaceship::ConnectAPI::Device>] new_devices
-        def initialize(old_devices, new_devices) # rubocop:disable Metrics/PerceivedComplexity
+        def initialize(old_devices, new_devices)
           @old_devices = old_devices
           @new_devices = new_devices
 
           old_device_by_udid = old_devices.group_by { |d| d.udid.downcase }.transform_values(&:first)
           new_device_by_udid = new_devices.group_by { |d| d.udid.downcase }.transform_values(&:first)
           @commands = (old_device_by_udid.keys + new_device_by_udid.keys)
-            .sort
-            .uniq
-            .map do |udid|
-              old_device = old_device_by_udid[udid]
-              new_device = new_device_by_udid[udid]
-              DevicePatch.new(old_device, new_device).command
-            end
+                      .sort
+                      .uniq
+                      .map do |udid|
+            old_device = old_device_by_udid[udid]
+            new_device = new_device_by_udid[udid]
+            DevicePatch.new(old_device, new_device).command
+          end
         end
 
         # @param [Boolean] dry_run

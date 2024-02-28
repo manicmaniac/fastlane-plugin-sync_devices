@@ -16,5 +16,5 @@ require 'support/helpers'
 Fastlane.load_actions # load other actions (in case your plugin calls other actions or shared values)
 
 RSpec.configure do |config|
-  config.filter_run_when_matching :focus
+  config.filter_run_when_matching(:focus)
 end
