@@ -4,44 +4,42 @@ module Fastlane
   module Helper
     module SyncDevicesHelper
       class DevicePatch
-        NULL_DEVICE = Spaceship::ConnectAPI::Device.new(nil, {
-          name: nil,
-          platform: nil,
-          enabled: false
-        }).freeze
-        private_constant :NULL_DEVICE
-
         attr_reader :old_device, :new_device
 
         # @param [Device, nil] old_device
         # @param [Device, nil] new_device
         def initialize(old_device, new_device)
-          @old_device = old_device || NULL_DEVICE
-          @new_device = new_device || NULL_DEVICE
+          @old_device = old_device
+          @new_device = new_device
         end
 
+        # @return [Boolean]
         def renamed?
-          old_device != NULL_DEVICE && new_device != NULL_DEVICE && old_device.name != new_device.name
+          old_device != nil && new_device != nil && old_device.name != new_device.name
         end
 
+        # @return [Boolean]
         def enabled?
-          old_device != NULL_DEVICE && !old_device.enabled? && new_device.enabled?
+          old_device != nil && !old_device.enabled? && !!new_device&.enabled?
         end
 
+        # @return [Boolean]
         def disabled?
-          old_device != NULL_DEVICE && old_device.enabled? && !new_device.enabled?
+          old_device != nil && old_device.enabled? && !new_device&.enabled?
         end
 
+        # @return [Boolean]
         def created?
-          old_device == NULL_DEVICE && new_device.enabled?
+          old_device == nil && !!new_device&.enabled?
         end
 
+        # @return [Boolean]
         def platform_changed?
-          return false if old_device == NULL_DEVICE || new_device == NULL_DEVICE
-
-          old_device.platform != new_device.platform
+          old_device != nil && new_device != nil && old_device.platform != new_device.platform
         end
 
+        # @return [Command::Base]
+        # @raise [UnsupportedOperation]
         def command
           raise UnsupportedOperation.change_platform(old_device, new_device) if platform_changed?
 
@@ -61,7 +59,7 @@ module Fastlane
           when [true, true, false, false]
             Command::EnableAndRename.new(old_device, new_device.name)
           else
-            raise UnsupportedOperation.inconsistent_status(old_device, new_device)
+            raise UnsupportedOperation.internal_inconsistency(self, old_device, new_device)
           end
         end
       end
@@ -89,9 +87,19 @@ module Fastlane
           )
         end
 
-        def self.inconsistent_status(old_device, new_device)
+        # @param [DevicePatch] patch
+        # @param [Spaceship::ConnectAPI::Device] old_device
+        # @param [Spaceship::ConnectAPI::Device] new_device
+        # @return [UnsupportedOperation]
+        def self.internal_inconsistency(patch, old_device, new_device)
+          info = {
+            renamed?: patch.renamed?,
+            enabled?: patch.enabled?,
+            disabled?: patch.disabled?,
+            created?: patch.created?
+          }
           new(
-            "Cannot change #{old_device} to #{new_device} because of internal inconsistency.",
+            "Cannot change #{old_device} to #{new_device} because of internal inconsistency. #{info}",
             old_device,
             new_device
           )
