@@ -6,6 +6,7 @@ gem 'guard'
 gem 'guard-rspec'
 gem 'guard-rubocop'
 gem 'pry'
+gem 'rackup'
 gem 'rake'
 gem 'rspec'
 gem 'rubocop', '1.50.2'
@@ -13,6 +14,8 @@ gem 'rubocop-performance'
 gem 'rubocop-require_tools'
 gem 'rubocop-rspec'
 gem 'simplecov'
+gem 'sinatra', '~> 4.0'
+gem 'webrick'
 
 gemspec
 
