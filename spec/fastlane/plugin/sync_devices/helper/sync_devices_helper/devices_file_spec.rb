@@ -1,3 +1,5 @@
+require 'cfpropertylist'
+require 'spaceship'
 require 'json'
 require 'tempfile'
 
@@ -371,6 +373,90 @@ module Fastlane::Helper::SyncDevicesHelper
             f.rewind
 
             expect { described_class.load_plist(f.path) }.to raise_error(InvalidDevicesFile, /^Invalid device file/)
+          end
+        end
+      end
+    end
+
+    describe '#dump' do
+    end
+
+    describe '#dump_tsv' do
+      context 'with no devices' do
+        it 'writes only headers' do
+          Tempfile.open do |f|
+            described_class.dump_tsv([], f.path)
+            f.rewind
+            expect(f.read).to eq "Device ID\tDevice Name\tDevice Platform\n"
+          end
+        end
+      end
+
+      context 'with devices' do
+        let(:devices) do
+          [
+            Spaceship::ConnectAPI::Device.new(nil, {
+              name: 'NAME',
+              udid: 'UDID',
+              platform: 'IOS',
+              status: 'ENABLED',
+            }),
+          ]
+        end
+
+        it 'writes rows after headers' do
+          Tempfile.open do |f|
+            described_class.dump_tsv(devices, f.path)
+            f.rewind
+            expect(f.read).to eq <<~TSV
+              Device ID\tDevice Name\tDevice Platform
+              UDID\tNAME\tIOS
+            TSV
+          end
+        end
+      end
+    end
+
+    describe '#dump_plist' do
+      context 'with no devices' do
+        it 'writes only headers' do
+          Tempfile.open do |f|
+            described_class.dump_plist([], f.path)
+            f.rewind
+            plist = CFPropertyList::List.new(file: f.path)
+            data = CFPropertyList.native_types(plist.value)
+            expect(data).to eq({ 'Device UDIDs' => [] })
+          end
+        end
+      end
+
+      context 'with devices' do
+        let(:devices) do
+          [
+            Spaceship::ConnectAPI::Device.new(nil, {
+              name: 'NAME',
+              udid: 'UDID',
+              platform: 'IOS',
+              status: 'ENABLED',
+            })
+          ]
+        end
+
+        it 'writes rows after headers' do
+          Tempfile.open do |f|
+            described_class.dump_plist(devices, f.path)
+            f.rewind
+            plist = CFPropertyList::List.new(file: f.path)
+            data = CFPropertyList.native_types(plist.value)
+            expect(data).to eq({
+              'Device UDIDs' => [
+                {
+                  'deviceIdentifier' => 'UDID',
+                  'deviceName' => 'NAME',
+                  'devicePlatform' => 'ios'
+                }
+              ]
+            })
           end
         end
       end

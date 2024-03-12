@@ -74,6 +74,46 @@ module Fastlane
           devices
         end
 
+        SUPPORTED_FORMATS = %i[tsv plist].freeze
+
+        def self.dump(devices, path, format: :tsv)
+          raise "Unsupported format '#{format}'." unless SUPPORTED_FORMATS.include?(format)
+
+          case format
+          when :tsv
+            dump_tsv(devices, path)
+          when :plist
+            dump_plist(devices, path)
+          end
+        end
+
+        def self.dump_tsv(devices, path)
+          require 'csv'
+
+          CSV.open(path, 'w', col_sep: "\t", headers: true, write_headers: true) do |csv|
+            csv << HEADERS
+            devices.each do |device|
+              csv << [device.udid, device.name, device.platform]
+            end
+          end
+        end
+
+        def self.dump_plist(devices, path)
+          require 'cfpropertylist'
+
+          plist = CFPropertyList::List.new
+          plist.value = CFPropertyList.guess({
+            'Device UDIDs' => devices.map do |device|
+              {
+                deviceIdentifier: device.udid,
+                deviceName: device.name,
+                devicePlatform: device.platform.downcase
+              }
+            end
+          })
+          plist.save(path, CFPropertyList::List::FORMAT_XML)
+        end
+
         MAX_DEVICE_NAME_LENGTH = 50
 
         # @param [Array<Spaceship::ConnectAPI::Device>] devices
