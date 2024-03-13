@@ -1,6 +1,7 @@
 require 'cfpropertylist'
 require 'spaceship'
 require 'json'
+require 'stringio'
 require 'tempfile'
 
 Platform = Spaceship::ConnectAPI::Platform
@@ -25,6 +26,15 @@ module Fastlane::Helper::SyncDevicesHelper
             expect(described_class).to have_received(:load_tsv).with(path).once
           end
         end
+
+        context "with an IO object of file#{ext}" do
+          let(:io) { instance_double(IO, path: "file#{ext}") }
+
+          it 'treats the file as TSV' do
+            described_class.load(io)
+            expect(described_class).to have_received(:load_tsv).with(io).once
+          end
+        end
       end
 
       %w[.deviceids .plist .xml].each do |ext|
@@ -36,9 +46,27 @@ module Fastlane::Helper::SyncDevicesHelper
             expect(described_class).to have_received(:load_plist).with(path).once
           end
         end
+
+        context "with an IO object of file#{ext}" do
+          let(:io) { instance_double(IO, path: "file#{ext}") }
+
+          it 'treats the file as Property List' do
+            described_class.load(io)
+            expect(described_class).to have_received(:load_plist).with(io).once
+          end
+        end
       end
 
-      context 'when a file with unknown extension and its contents is TSV' do
+      context 'when the IO object does not respond to #path and its contents is TSV' do
+        let(:io) { instance_double(IO, read: "Device ID\tDevice Name\tDevice Platform\n") }
+
+        it 'treats the file as TSV' do
+          described_class.load(io)
+          expect(described_class).to have_received(:load_tsv).with(io).once
+        end
+      end
+
+      context 'when the file has unknown extension and its contents is TSV' do
         it 'treats the file as TSV' do
           Tempfile.open do |f|
             f.write(<<~TSV)
@@ -53,7 +81,25 @@ module Fastlane::Helper::SyncDevicesHelper
         end
       end
 
-      context 'when a file with unknown extension and its contents is Property List' do
+      context 'when the IO object does not respond to #path and its contents is Property List' do
+        let(:io) { instance_double(IO, read: contents) }
+        let(:contents) do
+          <<~XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+            <plist version="1.0">
+            <dict/>
+            </plist>
+          XML
+        end
+
+        it 'treats the file as Property List' do
+          described_class.load(io)
+          expect(described_class).to have_received(:load_plist).with(io).once
+        end
+      end
+
+      context 'when the file has unknown extension and its contents is Property List' do
         it 'treats the file as Property List' do
           Tempfile.open do |f|
             f.write(<<~XML)
@@ -98,6 +144,17 @@ module Fastlane::Helper::SyncDevicesHelper
 
         it 'returns devices' do
           devices = described_class.load_tsv(path)
+          # Since Spaceship::ConnectAPI::Device cannot be compared with each other,
+          # convert them into Hash via JSON.
+          expect(JSON.parse(devices.to_json)).to eq JSON.parse(File.read(fixture('devices.json')))
+        end
+      end
+
+      context 'with a valid IO object' do
+        let(:path) { fixture('multiple-device-upload.txt') }
+
+        it 'returns devices' do
+          devices = File.open(path, 'rb') { |f| described_class.load_tsv(f) }
           # Since Spaceship::ConnectAPI::Device cannot be compared with each other,
           # convert them into Hash via JSON.
           expect(JSON.parse(devices.to_json)).to eq JSON.parse(File.read(fixture('devices.json')))
@@ -220,8 +277,9 @@ module Fastlane::Helper::SyncDevicesHelper
             TSV
             f.rewind
 
-            expect(described_class.load_tsv(f.path)).to contain_exactly(
-              an_object_having_attributes(platform: Platform::TV_OS)
+            expect { described_class.load_tsv(f.path) }.to raise_error(
+              InvalidDevicesFile,
+              /^Unknown platform/
             )
           end
         end
@@ -268,6 +326,15 @@ module Fastlane::Helper::SyncDevicesHelper
           Tempfile.open do |f|
             expect { described_class.load_plist(f.path) }.to raise_error(InvalidDevicesFile, /^File .+ is empty/)
           end
+        end
+      end
+
+      context 'with a valid IO object of XML PropertyList file' do
+        let(:path) { fixture('multiple-device-upload.deviceids') }
+
+        it 'returns devices' do
+          devices = File.open(path, 'rb') { |f| described_class.load_plist(f) }
+          expect(JSON.parse(devices.to_json)).to eq JSON.parse(File.read(fixture('devices.json')))
         end
       end
 
@@ -379,6 +446,23 @@ module Fastlane::Helper::SyncDevicesHelper
     end
 
     describe '#dump' do
+      let(:devices) { [] }
+      let(:path) { '/path/to/file' }
+
+      before do
+        allow(described_class).to receive(:dump).and_call_original
+        allow(described_class).to receive(:dump_tsv)
+        allow(described_class).to receive(:dump_plist)
+      end
+
+      %i[tsv plist].each do |format|
+        context "with format: :#{format}" do
+          it "dumps the devices in the given format" do
+            described_class.dump(devices, path, format: format)
+            expect(described_class).to have_received("dump_#{format}".to_sym).with(devices, path).once
+          end
+        end
+      end
     end
 
     describe '#dump_tsv' do
@@ -414,6 +498,15 @@ module Fastlane::Helper::SyncDevicesHelper
             TSV
           end
         end
+
+        it 'writes rows after headers to the given IO object' do
+          f = StringIO.new
+          described_class.dump_tsv(devices, f)
+          expect(f.string).to eq <<~TSV
+            Device ID\tDevice Name\tDevice Platform
+            UDID\tNAME\tIOS
+          TSV
+        end
       end
     end
 
@@ -427,6 +520,16 @@ module Fastlane::Helper::SyncDevicesHelper
             data = CFPropertyList.native_types(plist.value)
             expect(data).to eq({ 'Device UDIDs' => [] })
           end
+        end
+      end
+
+      context 'with an IO object and no devices' do
+        it 'writes only headers' do
+          f = StringIO.new
+          described_class.dump_plist([], f)
+          plist = CFPropertyList::List.new(data: f.string)
+          data = CFPropertyList.native_types(plist.value)
+          expect(data).to eq({ 'Device UDIDs' => [] })
         end
       end
 
@@ -458,6 +561,22 @@ module Fastlane::Helper::SyncDevicesHelper
               ]
             })
           end
+        end
+
+        it 'writes rows after headers to the given IO object' do
+          f = StringIO.new
+          described_class.dump_plist(devices, f)
+          plist = CFPropertyList::List.new(data: f.string)
+          data = CFPropertyList.native_types(plist.value)
+          expect(data).to eq({
+            'Device UDIDs' => [
+              {
+                'deviceIdentifier' => 'UDID',
+                'deviceName' => 'NAME',
+                'devicePlatform' => 'ios'
+              }
+            ]
+          })
         end
       end
     end
