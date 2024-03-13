@@ -3,7 +3,7 @@
 # MITM Proxy server that redirects SSL access of AppStore Connect API to our mock server.
 #
 # @example
-#   curl -x https://localhost:8080 -k --insecure-proxy https://api.appstoreconnect.apple.com/v1/devices
+#   curl -x https://localhost:8888 -k https://api.appstoreconnect.apple.com/v1/devices
 
 require 'webrick'
 require 'webrick/httpproxy'
@@ -25,12 +25,8 @@ class ProxyServer < WEBrick::HTTPProxyServer
 end
 
 if (pid = fork)
-  proxy = ProxyServer.new({
-    Port: 8080,
-    SSLEnable: true,
-    SSLCertName: [%w[CN localhost]]
-  })
-  trap('INT') do
+  proxy = ProxyServer.new({Port: 8888})
+  trap("INT") do
     proxy.shutdown
     Process.kill('INT', pid)
   end
