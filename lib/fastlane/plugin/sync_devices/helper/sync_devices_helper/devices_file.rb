@@ -27,13 +27,10 @@ module Fastlane
         def self.load_tsv(path_or_io)
           unless path_or_io.respond_to?(:read)
             path = path_or_io
-            raise InvalidDevicesFile.empty_file(path) if File.empty?(path)
-
             return File.open(path, 'rb') { |f| load_tsv(f) }
           end
 
           io = path_or_io
-          raise InvalidDevicesFile.empty_file(path) if io.eof?
 
           require 'csv'
           require 'spaceship/connect_api'
@@ -62,8 +59,6 @@ module Fastlane
         def self.load_plist(path_or_io)
           unless path_or_io.respond_to?(:read)
             path = path_or_io
-            raise InvalidDevicesFile.empty_file(path) if File.empty?(path)
-
             return File.open(path, 'rb') { |f| load_plist(f) }
           end
 
@@ -71,8 +66,6 @@ module Fastlane
 
           require 'cfpropertylist'
           require 'spaceship/connect_api'
-
-          raise InvalidDevicesFile.empty_file(io.path) if io.eof?
 
           plist = CFPropertyList::List.new(data: io.read)
           items = CFPropertyList.native_types(plist.value)['Device UDIDs']
@@ -263,13 +256,6 @@ module Fastlane
           @path = path
           @line_number = line_number
           @entry = entry
-        end
-
-        def self.empty_file(path)
-          new(
-            'File %<location>s is empty, please provide a file according to the Apple Sample UDID file (%<url>s)',
-            path
-          )
         end
 
         def self.invalid_headers(path, line_number)

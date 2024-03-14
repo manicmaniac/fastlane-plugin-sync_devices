@@ -134,7 +134,7 @@ module Fastlane::Helper::SyncDevicesHelper
       context 'with an empty file' do
         it 'raises an error' do
           Tempfile.open do |f|
-            expect { described_class.load_tsv(f.path) }.to raise_error(InvalidDevicesFile, /^File .+ is empty/)
+            expect { described_class.load_tsv(f.path) }.to raise_error(InvalidDevicesFile, /^Invalid header line at/)
           end
         end
       end
@@ -147,6 +147,19 @@ module Fastlane::Helper::SyncDevicesHelper
           # Since Spaceship::ConnectAPI::Device cannot be compared with each other,
           # convert them into Hash via JSON.
           expect(JSON.parse(devices.to_json)).to eq JSON.parse(File.read(fixture('devices.json')))
+        end
+      end
+
+      context 'with /dev/fd/N' do
+        before { @reader, @writer = IO.pipe }
+
+        after { @reader.close }
+
+        it 'returns devices' do
+          @writer.puts("Device ID\tDevice Name\tDevice Platform\n")
+          @writer.close
+          devices = described_class.load_tsv("/dev/fd/#{@reader.fileno}")
+          expect(devices).to be_empty
         end
       end
 
@@ -324,7 +337,7 @@ module Fastlane::Helper::SyncDevicesHelper
       context 'with an empty file' do
         it 'raises an error' do
           Tempfile.open do |f|
-            expect { described_class.load_plist(f.path) }.to raise_error(InvalidDevicesFile, /^File .+ is empty/)
+            expect { described_class.load_plist(f.path) }.to raise_error(CFFormatError, /^unexpected end of file/)
           end
         end
       end
