@@ -13,27 +13,11 @@ module Fastlane
             load_plist(path_or_io)
           else
             require 'cfpropertylist'
-            require 'stringio'
-
-            io = StringIO.new
-            if path_or_io.respond_to?(:read)
-              IO.copy_stream(path_or_io, io)
-            else
-              File.open(path_or_io, 'rb') { |f| IO.copy_stream(f, io) }
-            end
-            class << io
-              attr_accessor :path
-            end
-            io.path = path_or_ios.path if path_or_io.respond_to?(:path)
 
             begin
-              unless load_plist(io)
-                io.rewind
-                load_tsv(io)
-              end
+              load_plist(path_or_io) or load_tsv(path_or_io)
             rescue CFFormatError
-              io.rewind
-              load_tsv(io)
+              load_tsv(path_or_io)
             end
           end
         end
