@@ -54,7 +54,7 @@ module Fastlane::Helper::SyncDevicesHelper
       end
 
       context 'when a file with unknown extension and its contents is Property List' do
-        it 'treats the file as Property List' do
+        it 'treats the file as TSV' do
           Tempfile.open do |f|
             f.write(<<~XML)
             <?xml version="1.0" encoding="UTF-8"?>
@@ -78,7 +78,7 @@ module Fastlane::Helper::SyncDevicesHelper
             f.rewind
 
             described_class.load(f.path)
-            expect(described_class).to have_received(:load_plist).with(f.path).once
+            expect(described_class).to have_received(:load_tsv).with(f.path).once
           end
         end
       end

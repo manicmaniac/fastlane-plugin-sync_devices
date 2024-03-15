@@ -5,20 +5,9 @@ module Fastlane
         # @param [String] path
         # @return [Array<Spaceship::ConnectAPI::Device>]
         def self.load(path)
-          case File.extname(path)
-          when '.tsv', '.txt'
-            load_tsv(path)
-          when '.deviceids', '.plist', '.xml'
-            load_plist(path)
-          else
-            require 'cfpropertylist'
+          return load_plist(path) if %w[.deviceids .plist .xml].include?(File.extname(path))
 
-            begin
-              load_plist(path) or load_tsv(path)
-            rescue CFFormatError
-              load_tsv(path)
-            end
-          end
+          load_tsv(path)
         end
 
         # @param [String] path
