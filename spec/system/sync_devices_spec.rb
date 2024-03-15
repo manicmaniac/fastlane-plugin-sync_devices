@@ -72,13 +72,8 @@ describe 'fastlane-plugin-sync_devices' do
       it 'loads devices from stdin' do
         lines = ["Device ID\tDevice Name\tDevice Platform"] + (0..100).map { random_device_tsv_row }
         data = lines.join("\n")
-        puts '-' * 80
-        puts data
-        puts '-' * 80
 
         stdout, stderr, status = Open3.capture3(env, 'fastlane', 'run', 'sync_devices', 'devices_file:/dev/fd/0', stdin_data: data)
-        puts stdout
-        puts stderr
         expect(status).to be_success
         expect(stdout).to match /(Created.+){100}.+Successfully registered new devices/m
         expect(stderr).to be_empty
