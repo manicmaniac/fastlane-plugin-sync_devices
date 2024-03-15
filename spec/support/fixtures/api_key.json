@@ -1,7 +1,7 @@
 {
   "key_id": "TEST",
   "issuer_id": "TEST",
-  "key": "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEICoCI1HmxohGQ4jQq9mGX2ixv34jIiPSPHgC22r02ZuaoAoGCCqGSM49\nAwEHoUQDQgAEvFecAGQECgsfij7yDyo8p7pHG7HkwZHn1Txfzt+OAcrdmj/340+m\nhtFdwcI5qT79CnCYnXDKTxGpi54QI9xC2w==\n-----END EC PRIVATE KEY-----",
+  "key": "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIJfpxSoTwZVxm+2tkkbISTcCsrGCKr6Wz1w6+XLWYiDKoAoGCCqGSM49\nAwEHoUQDQgAEJRyUOwHrbvYkjbSb47cOcsWwl4Lk2dvPKEkiYoptD+qOCIXhOTu0\nRzhFx1LOx1m7nvPxg0S3sQFYvfEm6GphJA==\n-----END EC PRIVATE KEY-----",
   "duration": 500,
   "in_house": false
 }
