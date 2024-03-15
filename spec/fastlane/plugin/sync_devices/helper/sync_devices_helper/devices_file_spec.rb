@@ -290,7 +290,7 @@ module Fastlane::Helper::SyncDevicesHelper
       context 'with an empty file' do
         it 'raises an error' do
           Tempfile.open do |f|
-            expect { described_class.load_plist(f.path) }.to raise_error(CFFormatError, /^unexpected end of file/)
+            expect { described_class.load_plist(f.path) }.to raise_error(IOError, /is empty/)
           end
         end
       end
