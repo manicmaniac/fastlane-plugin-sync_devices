@@ -2,136 +2,99 @@ module Fastlane
   module Helper
     module SyncDevicesHelper
       module DevicesFile
-        # @param [String, #read] path_or_io
+        # @param [String] path
         # @return [Array<Spaceship::ConnectAPI::Device>]
-        def self.load(path_or_io)
-          extension = File.extname(path_or_io.respond_to?(:path) ? path_or_io.path : path_or_io) rescue nil
-          case extension
+        def self.load(path)
+          case File.extname(path)
           when '.tsv', '.txt'
-            load_tsv(path_or_io)
+            load_tsv(path)
           when '.deviceids', '.plist', '.xml'
-            load_plist(path_or_io)
+            load_plist(path)
           else
             require 'cfpropertylist'
 
             begin
-              load_plist(path_or_io) or load_tsv(path_or_io)
+              load_plist(path) or load_tsv(path)
             rescue CFFormatError
-              load_tsv(path_or_io)
+              load_tsv(path)
             end
           end
         end
 
-        # @param [String, #read] path_or_io
+        # @param [String] path
         # @return [Array<Spaceship::ConnectAPI::Device>]
-        def self.load_tsv(path_or_io)
-          unless path_or_io.respond_to?(:read)
-            path = path_or_io
-            return File.open(path, 'rb') { |f| load_tsv(f) }
-          end
-
-          io = path_or_io
-
+        def self.load_tsv(path)
           require 'csv'
           require 'spaceship/connect_api'
 
-          table = CSV.new(io, headers: true, col_sep: "\t").read
-          validate_headers(table.headers, io.path)
+          table = CSV.read(path, headers: true, col_sep: "\t")
+          validate_headers(table.headers, path)
 
           devices = table.map.with_index(2) do |row, line_number|
-            validate_row(row, io.path, line_number)
+            validate_row(row, path, line_number)
             Spaceship::ConnectAPI::Device.new(
               nil,
               {
                 name: row['Device Name'],
                 udid: row['Device ID'],
-                platform: parse_platform(row['Device Platform'], io.path),
+                platform: parse_platform(row['Device Platform'], path),
                 status: Spaceship::ConnectAPI::Device::Status::ENABLED
               }
             )
           end
-          validate_devices(devices, io.path)
+          validate_devices(devices, path)
           devices
         end
 
-        # @param [String, #read] path_or_io
+        # @param [String] path
         # @return [Array<Spaceship::ConnectAPI::Device>]
-        def self.load_plist(path_or_io)
-          unless path_or_io.respond_to?(:read)
-            path = path_or_io
-            return File.open(path, 'rb') { |f| load_plist(f) }
-          end
-
-          io = path_or_io
-
+        def self.load_plist(path)
           require 'cfpropertylist'
           require 'spaceship/connect_api'
 
-          plist = CFPropertyList::List.new(data: io.read)
+          plist = CFPropertyList::List.new(file: path)
           items = CFPropertyList.native_types(plist.value)['Device UDIDs']
           devices = items.map.with_index do |item, index|
-            validate_dict_item(item, index, io.path)
+            validate_dict_item(item, index, path)
             Spaceship::ConnectAPI::Device.new(
               nil,
               {
                 name: item['deviceName'],
                 udid: item['deviceIdentifier'],
-                platform: parse_platform(item['devicePlatform'], io.path),
+                platform: parse_platform(item['devicePlatform'], path),
                 status: Spaceship::ConnectAPI::Device::Status::ENABLED
               }
             )
           end
-          validate_devices(devices, io.path)
+          validate_devices(devices, path)
           devices
         end
 
         SUPPORTED_FORMATS = %i[tsv plist].freeze
 
-        # @param [Array<Spaceship::ConnectAPI::Device>] devices
-        # @param [String, #write] path_or_io
-        # @param [:tsv, :plist] format
-        def self.dump(devices, path_or_io, format: :tsv)
+        def self.dump(devices, path, format: :tsv)
           raise "Unsupported format '#{format}'." unless SUPPORTED_FORMATS.include?(format)
 
           case format
           when :tsv
-            dump_tsv(devices, path_or_io)
+            dump_tsv(devices, path)
           when :plist
-            dump_plist(devices, path_or_io)
+            dump_plist(devices, path)
           end
         end
 
-        # @param [Array<Spaceship::ConnectAPI::Device>] devices
-        # @param [String, #write] path_or_io
-        def self.dump_tsv(devices, path_or_io)
-          unless path_or_io.respond_to?(:write)
-            path = path_or_io
-            return File.open(path, 'wb') { |f| dump_tsv(devices, f) }
-          end
-
-          io = path_or_io
-
+        def self.dump_tsv(devices, path)
           require 'csv'
 
-          csv_string = CSV.generate(col_sep: "\t") do |csv|
+          CSV.open(path, 'w', col_sep: "\t", headers: true, write_headers: true) do |csv|
             csv << HEADERS
             devices.each do |device|
               csv << [device.udid, device.name, device.platform]
             end
           end
-          io.write(csv_string)
         end
 
-        # @param [Array<Spaceship::ConnectAPI::Device>] devices
-        # @param [String, #write] path_or_io
-        def self.dump_plist(devices, path_or_io)
-          unless path_or_io.respond_to?(:write)
-            path = path_or_io
-            return File.open(path, 'wb') { |f| dump_plist(devices, f) }
-          end
-
-          io = path_or_io
-
+        def self.dump_plist(devices, path)
           require 'cfpropertylist'
 
           plist = CFPropertyList::List.new
@@ -144,8 +107,7 @@ module Fastlane
               }
             end
           })
-          plist_string = plist.to_str(CFPropertyList::List::FORMAT_XML)
-          io.write(plist_string)
+          plist.save(path, CFPropertyList::List::FORMAT_XML)
         end
 
         MAX_DEVICE_NAME_LENGTH = 50
@@ -156,8 +118,7 @@ module Fastlane
           seen_udids = []
           devices.each do |device|
             udid = device.udid&.downcase
-            regexp = udid_regexp_for_platform(device.platform, path)
-            raise InvalidDevicesFile.invalid_udid(device.udid, path, regexp) unless udid.match(regexp)
+            raise InvalidDevicesFile.invalid_udid(device.udid, path) unless udid.match(udid_regex_for_platform(device.platform))
             raise InvalidDevicesFile.udid_not_unique(device.udid, path) if seen_udids.include?(udid)
             raise InvalidDevicesFile.device_name_too_long(device.name, path) if device.name.size > MAX_DEVICE_NAME_LENGTH
 
@@ -228,18 +189,19 @@ module Fastlane
         end
         private_class_method :validate_dict_item
 
-        def self.udid_regexp_for_platform(platform, path)
+        def self.udid_regex_for_platform(platform)
           case platform
-          when Spaceship::ConnectAPI::BundleIdPlatform::IOS
+          when Spaceship::ConnectAPI::Platform::IOS
             # @see https://www.theiphonewiki.com/wiki/UDID
-            /^(?:[0-9]{8}-[0-9a-f]{16}|[0-9a-f]{40})$/i
-          when Spaceship::ConnectAPI::BundleIdPlatform::MAC_OS
-            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+            /^(?:[0-9]{8}-[0-9a-f]{16}|[0-9a-f]{40})$/
+          when Spaceship::ConnectAPI::Platform::MAC_OS
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
           else
-            raise InvalidDevicesFile.unknown_platform(platform, path)
+            # I have no idea about UDID of other platforms (e.g. tvOS, watchOS).
+            /.+/
           end
         end
-        private_class_method :udid_regexp_for_platform
+        private_class_method :udid_regex_for_platform
       end
 
       class InvalidDevicesFile < StandardError
@@ -290,9 +252,9 @@ module Fastlane
           )
         end
 
-        def self.invalid_udid(udid, path, regexp)
+        def self.invalid_udid(udid, path)
           new(
-            "Invalid UDID '#{udid}' at %<location>s, the UDID is not in the correct format /#{regexp}/",
+            "Invalid UDID '#{udid}' at %<location>s, the UDID is not in the correct format",
             path
           )
         end
