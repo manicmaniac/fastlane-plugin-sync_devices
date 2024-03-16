@@ -15,7 +15,7 @@ class WEBrick::HTTPRequest
 end
 
 class ProxyServer < WEBrick::HTTPProxyServer
-  def do_CONNECT(req, res)
+  def do_CONNECT(req, res) # rubocop:ignore Naming/MethodName
     host = req.unparsed_uri.split(':', 2)[0]
     if host == 'api.appstoreconnect.apple.com'
       req.unparsed_uri = 'localhost:4567'
@@ -25,7 +25,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
 end
 
 if (pid = fork)
-  proxy = ProxyServer.new({Port: 8888})
+  proxy = ProxyServer.new({ Port: 8888 })
   trap("INT") do
     proxy.shutdown
     Process.kill('INT', pid)
@@ -40,4 +40,3 @@ else
   })
   app.start!
 end
-

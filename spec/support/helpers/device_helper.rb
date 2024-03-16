@@ -50,7 +50,7 @@ module DeviceHelper
         SecureRandom.hex(2),
         SecureRandom.hex(2),
         SecureRandom.hex(2),
-        SecureRandom.hex(6),
+        SecureRandom.hex(6)
       ].join('-')
     else
       raise "Unsuported platform #{platform}."

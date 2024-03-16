@@ -423,8 +423,8 @@ module Fastlane::Helper::SyncDevicesHelper
               name: 'NAME',
               udid: 'UDID',
               platform: 'IOS',
-              status: 'ENABLED',
-            }),
+              status: 'ENABLED'
+            })
           ]
         end
 
@@ -461,7 +461,7 @@ module Fastlane::Helper::SyncDevicesHelper
               name: 'NAME',
               udid: 'UDID',
               platform: 'IOS',
-              status: 'ENABLED',
+              status: 'ENABLED'
             })
           ]
         end

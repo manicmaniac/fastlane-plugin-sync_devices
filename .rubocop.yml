@@ -196,6 +196,7 @@ Style/MethodCallWithArgsParentheses:
   - and_return
   - and_raise
   - match_array
+  - output
 Bundler/OrderedGems:
   Enabled: true
   TreatCommentsAsGroupSeparators: false
