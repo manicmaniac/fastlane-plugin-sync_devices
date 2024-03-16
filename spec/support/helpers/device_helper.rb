@@ -6,14 +6,12 @@ require 'spaceship'
 
 module DeviceHelper
   def random_device
-    name_length = (1...50).to_a.sample
     platform = random_platform
-    udid = random_udid(platform)
     Spaceship::ConnectAPI::Device.new(
       nil,
       {
-        name: SecureRandom.alphanumeric(name_length),
-        udid: udid,
+        name: random_name,
+        udid: random_udid(platform),
         platform: platform,
         status: [
           Spaceship::ConnectAPI::Device::Status::ENABLED,
@@ -30,6 +28,11 @@ module DeviceHelper
       device.name,
       device.platform
     ].join("\t")
+  end
+
+  def random_name
+    length = (1...50).to_a.sample
+    SecureRandom.alphanumeric(length)
   end
 
   def random_platform
