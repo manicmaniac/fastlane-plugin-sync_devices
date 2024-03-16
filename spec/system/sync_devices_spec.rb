@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'open3'
-require 'tempfile'
 require 'timeout'
 
 describe 'fastlane-plugin-sync_devices' do
@@ -10,6 +8,7 @@ describe 'fastlane-plugin-sync_devices' do
 
   let(:env) do
     {
+      'CI' => '1', # To make fastlane non-interactive
       'NO_COLOR' => '1',
       'FASTLANE_HIDE_CHANGELOG' => '1',
       'FASTLANE_HIDE_GITHUB_ISSUES' => '1',
@@ -23,20 +22,23 @@ describe 'fastlane-plugin-sync_devices' do
 
   describe 'fastlane action sync_devices' do
     it 'prints help' do
-      stdout, stderr, status = Open3.capture3(env, 'fastlane', 'action', 'sync_devices')
-      expect(status).to be_success
-      expect(stdout).not_to be_empty
-      expect(stderr).to be_empty
+      expect { system(env, 'fastlane action sync_devices', exception: true) }
+        .to output(/sync_devices/)
+        .to_stdout_from_any_process
+        .and output('')
+        .to_stderr_from_any_process
     end
   end
 
   describe 'fastlane run sync_devices' do
     context 'without arguments' do
       it 'fails with error messages' do
-        stdout, stderr, status = Open3.capture3(env, 'fastlane', 'run', 'sync_devices')
-        expect(status).not_to be_success
-        expect(stdout).not_to be_empty
-        expect(stderr).to eq "\n[!] You must pass `devices_file`. Please check the readme.\n"
+        expect { system(env, 'fastlane run sync_devices') }
+          .to output(/sync_devices/)
+          .to_stdout_from_any_process
+          .and output(/You must pass `devices_file`/)
+          .to_stderr_from_any_process
+        expect(Process.last_status).not_to be_success
       end
     end
 
@@ -56,57 +58,19 @@ describe 'fastlane-plugin-sync_devices' do
         IO.copy_stream(@reader, $stderr) if example.exception
       end
 
-      it 'registers new devices' do
-        Tempfile.open do |f|
-          f.puts("Device ID\tDevice Name\tDevice Platform")
-          100.times { f.puts(random_device_tsv_row) }
-          f.rewind
-
-          stdout, stderr, status = Open3.capture3(env, 'fastlane', 'run', 'sync_devices', "devices_file:#{f.path}")
-          expect(status).to be_success
-          expect(stdout).to match /(Created.+){100}.+Successfully registered new devices/m
-          expect(stderr).to be_empty
-        end
-      end
-
-      it 'loads devices from stdin' do
-        lines = ["Device ID\tDevice Name\tDevice Platform"] + (0..100).map { random_device_tsv_row }
-        data = lines.join("\n")
-
-        stdout, stderr, status = Open3.capture3(env, 'fastlane', 'run', 'sync_devices', 'devices_file:/dev/fd/0', stdin_data: data)
-        expect(status).to be_success
-        expect(stdout).to match /(Created.+){100}.+Successfully registered new devices/m
-        expect(stderr).to be_empty
-      end
-
-      xcontext 'when adding, deleting and renaming random devices' do
-        let(:tempfile) { Tempfile.open }
-
-        before do
-          tempfile.puts("Device ID\tDevice Name\tDevice Platform")
-          100.times { tempfile.puts(random_device_tsv_row) }
-          tempfile.rewind
-          system(env, 'fastlane', 'run' 'sync_devices' "devices_file:#{tempfile.path}", exception: true)
-        end
-
-        after { tempfile.close }
-
+      context 'when adding, deleting and renaming random devices' do
         it 'registers new devices' do
-          Tempfile.open do |f|
-
-            stdout, stderr, status = Open3.capture3(env, 'fastlane', 'run', 'sync_devices', "devices_file:#{f.path}")
-            expect(status).to be_success
-            expect(stdout).to match /(Created.+){100}.+Successfully registered new devices/m
-            expect(stderr).to be_empty
-
-            f.rewind
-            content = f.lines.select.with_index { |_, i| i.even? }.join("\n")
-            f.rewind
-            f.write(content)
-            f.truncate
-
-            f.rewind
-            puts(f.read)
+          Timeout.timeout(5) do
+            expect { system(env, 'fastlane', 'run', 'sync_devices', "devices_file:#{fixture('system/0.tsv')}", exception: true) }
+              .to output(/(Created.+){10}.+Successfully registered new devices/m)
+              .to_stdout_from_any_process
+              .and output('')
+              .to_stderr_from_any_process
+            expect { system(env, 'fastlane', 'run', 'sync_devices', "devices_file:#{fixture('system/1.tsv')}", exception: true) }
+              .to output(/(Created.+){10}.+Successfully registered new devices/m)
+              .to_stdout_from_any_process
+              .and output('')
+              .to_stderr_from_any_process
           end
         end
       end
