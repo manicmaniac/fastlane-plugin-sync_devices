@@ -20,3 +20,40 @@ file 'spec/support/fixtures/api_key.json' do |f|
     in_house: false
   }))
 end
+
+file 'spec/support/fixtures/system/0.tsv' do |task|
+  require_relative 'spec/support/helpers/device_helper'
+
+  include DeviceHelper
+
+  File.open(task.name, 'w') do |f|
+    f.puts("Device ID\tDevice Name\tDevice Platform")
+    20.times do
+      f.puts(random_device_tsv_row)
+    end
+  end
+end
+
+file 'spec/support/fixtures/system/1.tsv' => 'spec/support/fixtures/system/0.tsv' do |task|
+  require 'csv'
+  require_relative 'spec/support/helpers/device_helper'
+
+  include DeviceHelper
+
+  csv = CSV.read(task.source, col_sep: "\t")
+  new_csv_string = CSV.generate(col_sep: "\t") do |new_csv|
+    csv.each_with_index do |row, index|
+      case index % 3
+      when 0 # as-is
+        new_csv << row
+      when 1 # rename
+        row[1] = random_name
+        new_csv << row
+      when 2 # disable
+        next
+      end
+    end
+  end
+  new_csv_string += (0..(csv.size / 3)).map { "#{random_device_tsv_row}\n" }.join
+  File.write(task.name, new_csv_string)
+end
