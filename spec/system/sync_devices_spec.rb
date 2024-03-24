@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+require 'json'
+require 'open-uri'
+require 'openssl'
+require 'spaceship'
 require 'timeout'
 
 describe 'fastlane-plugin-sync_devices' do
@@ -62,17 +66,23 @@ describe 'fastlane-plugin-sync_devices' do
 
       context 'when adding, deleting and renaming random devices' do
         it 'registers new devices' do
-          Timeout.timeout(5) do
+          Timeout.timeout(10) do
             expect { system(env, 'fastlane', 'run', 'sync_devices', "devices_file:#{fixture('system/0.tsv')}", exception: true) }
               .to output(/(Created.+){10}.+Successfully registered new devices/m)
               .to_stdout_from_any_process
               .and output('')
               .to_stderr_from_any_process
             expect { system(env, 'fastlane', 'run', 'sync_devices', "devices_file:#{fixture('system/1.tsv')}", exception: true) }
-              .to output(/(Created.+){10}.+Successfully registered new devices/m)
+              .to output(/Successfully registered new devices/)
               .to_stdout_from_any_process
               .and output('')
               .to_stderr_from_any_process
+            devices = URI.open('https://localhost:4567/v1/devices', ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE)
+              .read
+              .then { |data| JSON.parse(data) }
+              .then { |json| Spaceship::ConnectAPI::Models.parse(json) }
+            expect(devices.size).to eq 28
+            expect(devices.count(&:enabled?)).to eq 21
           end
         end
       end
