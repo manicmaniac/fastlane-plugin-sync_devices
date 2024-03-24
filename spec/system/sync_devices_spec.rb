@@ -43,6 +43,7 @@ describe 'fastlane-plugin-sync_devices' do
     end
 
     context 'with devices_file' do
+      # rubocop:disable RSpec/InstanceVariable
       before do
         @reader, @writer = IO.pipe
         @pid = spawn(RbConfig.ruby, File.expand_path('../support/servers/proxy.rb', __dir__), err: @writer)
@@ -57,6 +58,7 @@ describe 'fastlane-plugin-sync_devices' do
         @writer.close
         IO.copy_stream(@reader, $stderr) if example.exception
       end
+      # rubocop:enable RSpec/InstanceVariable
 
       context 'when adding, deleting and renaming random devices' do
         it 'registers new devices' do

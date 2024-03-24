@@ -15,7 +15,7 @@ class WEBrick::HTTPRequest
 end
 
 class ProxyServer < WEBrick::HTTPProxyServer
-  def do_CONNECT(req, res) # rubocop:ignore Naming/MethodName
+  def do_CONNECT(req, res) # rubocop:disable Naming/MethodName
     host = req.unparsed_uri.split(':', 2)[0]
     if host == 'api.appstoreconnect.apple.com'
       req.unparsed_uri = 'localhost:4567'
