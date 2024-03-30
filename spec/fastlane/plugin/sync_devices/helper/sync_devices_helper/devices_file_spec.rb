@@ -403,6 +403,28 @@ module Fastlane::Helper::SyncDevicesHelper
     end
 
     describe '#dump' do
+      let(:devices) { [] }
+      let(:path) { '/path/to/file' }
+
+      before do
+        allow(described_class).to receive(:dump).and_call_original
+        allow(described_class).to receive(:dump_tsv)
+        allow(described_class).to receive(:dump_plist)
+      end
+
+      context 'with format: :tsv' do
+        it 'delegates to dump_tsv()' do
+          described_class.dump(devices, path, format: :tsv)
+          expect(described_class).to have_received(:dump_tsv).with(devices, path)
+        end
+      end
+
+      context 'with format: :plist' do
+        it 'delegates to dump_plist()' do
+          described_class.dump(devices, path, format: :plist)
+          expect(described_class).to have_received(:dump_plist).with(devices, path)
+        end
+      end
     end
 
     describe '#dump_tsv' do
