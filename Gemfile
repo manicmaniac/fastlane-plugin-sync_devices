@@ -3,6 +3,7 @@ source('https://rubygems.org')
 gem 'bundler'
 gem 'debug', '>= 1.0'
 gem 'fastlane', '>= 2.219.0'
+gem 'ffaker'
 gem 'guard'
 gem 'guard-rspec'
 gem 'guard-rubocop'

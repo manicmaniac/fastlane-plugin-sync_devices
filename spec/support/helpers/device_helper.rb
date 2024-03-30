@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'digest'
+require 'ffaker'
 require 'securerandom'
 require 'spaceship'
 
@@ -31,8 +32,7 @@ module DeviceHelper
   end
 
   def random_name
-    length = (1...50).to_a.sample
-    SecureRandom.alphanumeric(length)
+    FFaker::Name.unique.name
   end
 
   def random_platform
