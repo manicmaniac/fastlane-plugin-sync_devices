@@ -78,14 +78,14 @@ post '/v1/devices' do
   platform = attributes.fetch(:platform)
   udid = attributes.fetch(:udid)
   device = Device.new(
-    id: Digest::MD5.hexdigest(udid).upcase,
-    deviceClass: nil,
-    model: nil,
-    name: name,
-    platform: platform,
-    status: 'ENABLED',
-    udid: udid,
-    addedDate: Time.now.getutc.strftime('%Y-%m-%dT%H:%M:%SZ')
+    Digest::MD5.hexdigest(udid).upcase,
+    nil,
+    nil,
+    name,
+    platform,
+    'ENABLED',
+    udid,
+    Time.now.getutc.strftime('%Y-%m-%dT%H:%M:%SZ')
   )
   $devices << device
   status 201

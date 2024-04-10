@@ -1,8 +1,6 @@
 require 'spaceship'
 require 'timeout'
 
-Device = Spaceship::ConnectAPI::Device
-
 describe 'app' do # rubocop:disable RSpec::DescribeClass
   # rubocop:disable RSpec/InstanceVariable
   before do
@@ -32,28 +30,37 @@ describe 'app' do # rubocop:disable RSpec::DescribeClass
 
   example 'user can manipulate devices' do
     # list
-    devices = Device.all(client: client)
+    devices = Spaceship::ConnectAPI::Device.all(client: client)
     expect(devices).to be_empty
 
     # create
-    device = Device.create(client: client, name: 'foo', platform: 'IOS', udid: 'UDID')
-    expect(device.enabled?).to be true
+    device = Spaceship::ConnectAPI::Device.create(client: client, name: 'foo', platform: 'IOS', udid: 'UDID')
+    expect(device).to have_attributes({
+      id: kind_of(String),
+      device_class: nil,
+      model: nil,
+      name: 'foo',
+      platform: 'IOS',
+      status: 'ENABLED',
+      udid: 'UDID',
+      added_date: kind_of(String)
+    })
 
-    devices = Device.all(client: client)
+    devices = Spaceship::ConnectAPI::Device.all(client: client)
     expect(devices.map(&:id)).to include(device.id)
 
     # disable
-    device = Device.disable('UDID', client: client)
+    device = Spaceship::ConnectAPI::Device.disable('UDID', client: client)
     expect(device.enabled?).to be false
 
-    devices = Device.all(client: client)
+    devices = Spaceship::ConnectAPI::Device.all(client: client)
     expect(devices.detect { |d| d.id == device.id }).not_to be_enabled
 
     # rename
-    device = Device.rename('UDID', 'bar', client: client)
+    device = Spaceship::ConnectAPI::Device.rename('UDID', 'bar', client: client)
     expect(device.name).to eq 'bar'
 
-    devices = Device.all(client: client)
+    devices = Spaceship::ConnectAPI::Device.all(client: client)
     expect(devices.detect { |d| d.id == device.id }.name).to eq 'bar'
   end
 end

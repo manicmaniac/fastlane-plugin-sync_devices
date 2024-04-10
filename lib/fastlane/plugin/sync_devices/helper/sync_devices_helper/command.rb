@@ -48,7 +48,7 @@ module Fastlane
           attr_reader :name
 
           def initialize(device, name)
-            super(device: device)
+            super(device)
             @name = name
           end
 
@@ -65,7 +65,7 @@ module Fastlane
           attr_reader :name
 
           def initialize(device, name)
-            super(device: device)
+            super(device)
             @name = name
           end
 
@@ -86,7 +86,7 @@ module Fastlane
           attr_reader :name
 
           def initialize(device, name)
-            super(device: device)
+            super(device)
             @name = name
           end
 
