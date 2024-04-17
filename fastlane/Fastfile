@@ -1,0 +1,8 @@
+# frozen_string_literal: true
+
+lane :test do
+  sync_devices(
+    devices_file: 'spec/support/fixtures/multiple-device-upload.txt',
+    api_key_path: 'spec/support/fixtures/api_key.json'
+  )
+end

@@ -1,0 +1,31 @@
+---
+require:
+- rubocop-performance
+- rubocop-rspec
+- rubocop-rake
+- rubocop/require_tools
+AllCops:
+  TargetRubyVersion: 2.7
+  NewCops: enable
+Gemspec/DevelopmentDependencies:
+  EnforcedStyle: Gemfile
+Metrics/MethodLength:
+  Max: 20
+RSpec/ExampleLength:
+  Max: 10
+RSpec/FilePath:
+  Enabled: false # Because it has been deprecated and will be removed in rubocop-rspec 3.0.
+RSpec/SpecFilePathFormat:
+  CustomTransform:
+    Fastlane: fastlane/plugin/sync_devices
+Require/MissingRequireStatement:
+  Exclude:
+  - lib/fastlane/plugin/sync_devices/actions/*_action.rb
+  - "**/spec/**/*.rb"
+  - "**/spec_helper.rb"
+  - "**/Fastfile"
+  - "**/*.gemspec"
+  - "**/Rakefile"
+  - fastlane/**/*
+Style/ClassCheck:
+  EnforcedStyle: kind_of?

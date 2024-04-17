@@ -1,0 +1,7 @@
+{
+  "key_id": "TEST",
+  "issuer_id": "TEST",
+  "key": "-----BEGIN EC PRIVATE KEY-----\nMHcCAQEEIJfpxSoTwZVxm+2tkkbISTcCsrGCKr6Wz1w6+XLWYiDKoAoGCCqGSM49\nAwEHoUQDQgAEJRyUOwHrbvYkjbSb47cOcsWwl4Lk2dvPKEkiYoptD+qOCIXhOTu0\nRzhFx1LOx1m7nvPxg0S3sQFYvfEm6GphJA==\n-----END EC PRIVATE KEY-----",
+  "duration": 500,
+  "in_house": false
+}
