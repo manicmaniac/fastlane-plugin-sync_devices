@@ -3,6 +3,8 @@
 [![fastlane Plugin Badge](https://rawcdn.githack.com/fastlane/fastlane/master/fastlane/assets/plugin-badge.svg)](https://rubygems.org/gems/fastlane-plugin-sync_devices)
 [![Gem Version](https://badge.fury.io/rb/fastlane-plugin-sync_devices.svg)](https://badge.fury.io/rb/fastlane-plugin-sync_devices)
 [![Test](https://github.com/manicmaniac/fastlane-plugin-sync_devices/actions/workflows/test.yml/badge.svg)](https://github.com/manicmaniac/fastlane-plugin-sync_devices/actions/workflows/test.yml)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/86122943536052f82616/test_coverage)](https://codeclimate.com/github/manicmaniac/fastlane-plugin-sync_devices/test_coverage)
+[![Maintainability](https://api.codeclimate.com/v1/badges/86122943536052f82616/maintainability)](https://codeclimate.com/github/manicmaniac/fastlane-plugin-sync_devices/maintainability)
 
 ## Getting Started
 
