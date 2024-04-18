@@ -1,6 +1,7 @@
 # sync\_devices plugin
 
 [![fastlane Plugin Badge](https://rawcdn.githack.com/fastlane/fastlane/master/fastlane/assets/plugin-badge.svg)](https://rubygems.org/gems/fastlane-plugin-sync_devices)
+[![Gem Version](https://badge.fury.io/rb/fastlane-plugin-sync_devices.svg)](https://badge.fury.io/rb/fastlane-plugin-sync_devices)
 [![Test](https://github.com/manicmaniac/fastlane-plugin-sync_devices/actions/workflows/test.yml/badge.svg)](https://github.com/manicmaniac/fastlane-plugin-sync_devices/actions/workflows/test.yml)
 
 ## Getting Started
