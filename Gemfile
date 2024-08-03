@@ -3,7 +3,7 @@
 source('https://rubygems.org')
 
 gem 'bundler'
-gem 'danger', '~> 9.4.3'
+gem 'danger', '~> 9.5.0'
 gem 'danger-rubocop', '~> 0.13.0'
 gem 'debug', '>= 1.0'
 gem 'fastlane', '~> 2.219'
