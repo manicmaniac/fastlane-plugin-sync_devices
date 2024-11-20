@@ -28,7 +28,7 @@ gem 'yard', '~> 0.9'
 if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.3.0')
   gem 'abbrev', '~> 0.1.2'
   gem 'csv', '~> 3.3'
-  gem 'mutex_m', '~> 0.2.0'
+  gem 'mutex_m', '~> 0.3.0'
 end
 
 gemspec
