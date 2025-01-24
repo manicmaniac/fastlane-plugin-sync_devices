@@ -22,7 +22,12 @@ describe 'app' do # rubocop:disable RSpec::DescribeClass
   let(:client) do
     Class.new(Spaceship::ConnectAPI::Provisioning::Client) do
       def hostname
-        'http://localhost:4567/v1/'
+        # https://github.com/fastlane/fastlane/pull/21900
+        if Fastlane::VERSION.to_f < 2.221
+          'http://localhost:4567/v1'
+        else
+          'http://localhost:4567/'
+        end
       end
     end.new(token: token)
   end
