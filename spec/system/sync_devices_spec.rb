@@ -79,7 +79,7 @@ describe 'fastlane-plugin-sync_devices' do
               system_ruby(env, fastlane_path, 'run', 'sync_devices', "devices_file:#{fixture('system/0.tsv')}",
                           exception: true)
             end
-              .to output(/(Created.+){10}.+Successfully registered new devices/m)
+              .to output(/(Created.+){10}.+Successfully synchronized devices/m)
               .to_stdout_from_any_process
               .and output('')
               .to_stderr_from_any_process
@@ -89,7 +89,7 @@ describe 'fastlane-plugin-sync_devices' do
               system_ruby(env, fastlane_path, 'run', 'sync_devices', "devices_file:#{fixture('system/1.tsv')}",
                           exception: true)
             end
-              .to output(/Successfully registered new devices/)
+              .to output(/Successfully synchronized devices/)
               .to_stdout_from_any_process
               .and output('')
               .to_stderr_from_any_process
