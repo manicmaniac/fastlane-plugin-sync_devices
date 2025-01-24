@@ -13,8 +13,6 @@ Metrics/MethodLength:
   Max: 20
 RSpec/ExampleLength:
   Max: 10
-RSpec/FilePath:
-  Enabled: false # Because it has been deprecated and will be removed in rubocop-rspec 3.0.
 RSpec/SpecFilePathFormat:
   CustomTransform:
     Fastlane: fastlane/plugin/sync_devices
