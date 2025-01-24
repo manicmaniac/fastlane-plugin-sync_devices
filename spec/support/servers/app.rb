@@ -38,6 +38,7 @@ devices = []
 
 enable :lock
 set :default_content_type, :json
+set :host_authorization, { permitted_hosts: [] }
 
 # https://developer.apple.com/documentation/appstoreconnectapi/list_devices
 get '/v1/devices' do
