@@ -1,17 +1,25 @@
 # frozen_string_literal: true
 
 require 'bundler/gem_tasks'
-
 require 'rspec/core/rake_task'
-RSpec::Core::RakeTask.new
-
 require 'rubocop/rake_task'
+require 'yard'
+
+RSpec::Core::RakeTask.new
+Rake.application.lookup(:spec).enhance(%I[coverage:clean])
+
 RuboCop::RakeTask.new(:rubocop)
 
-require 'yard'
 YARD::Rake::YardocTask.new
 
 task(default: %i[spec rubocop])
+
+namespace :coverage do
+  desc 'Remove coverage reports'
+  task :clean do
+    FileUtils.rm_rf(File.expand_path('coverage', __dir__))
+  end
+end
 
 file 'spec/support/fixtures/api_key.json' do |task|
   require 'json'
