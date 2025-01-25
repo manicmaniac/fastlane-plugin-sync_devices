@@ -13,6 +13,7 @@ Gem::Specification.new do |spec|
   spec.license = 'MIT'
   spec.required_ruby_version = '>= 2.7.0'
   spec.metadata = {
+    'documentation_uri' => 'https://www.rubydoc.info/gems/fastlane-plugin-sync_devices',
     'bug_tracker_uri' => 'https://github.com/manicmaniac/fastlane-plugin-sync_devices/issues',
     'rubygems_mfa_required' => 'true',
     'source_code_uri' => 'https://github.com/manicmaniac/fastlane-plugin-sync_devices'
