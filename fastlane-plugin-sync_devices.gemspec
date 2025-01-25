@@ -13,10 +13,12 @@ Gem::Specification.new do |spec|
   spec.license = 'MIT'
   spec.required_ruby_version = '>= 2.7.0'
   spec.metadata = {
-    'documentation_uri' => 'https://www.rubydoc.info/gems/fastlane-plugin-sync_devices',
     'bug_tracker_uri' => 'https://github.com/manicmaniac/fastlane-plugin-sync_devices/issues',
+    'changelog_uri' => 'https://github.com/manicmaniac/fastlane-plugin-sync_devices/blob/master/CHANGELOG.md',
+    'documentation_uri' => 'https://www.rubydoc.info/gems/fastlane-plugin-sync_devices',
+    'homepage_uri' => spec.homepage,
     'rubygems_mfa_required' => 'true',
-    'source_code_uri' => 'https://github.com/manicmaniac/fastlane-plugin-sync_devices'
+    'source_code_uri' => spec.homepage
   }
   spec.files = Dir['lib/**/*'] + %w[CHANGELOG.md LICENSE README.md]
   spec.require_paths = ['lib']
