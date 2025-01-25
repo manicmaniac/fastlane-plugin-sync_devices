@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative 'app'
+require_relative 'proxy'
+
+usage = <<~USAGE
+  Usage: start_server [-h] <APP_PORT> <PROXY_PORT>
+
+  Start both mock AppStore API server and proxy server for testing.
+
+  Options:
+    -h, --help  Show this message and exit
+
+  Arguments:
+    APP_PORT    The port the app server will listen on
+    PROXY_PORT  The port the proxy server will listen on
+
+  Example:
+    $ start_server 4567 8888
+    $ curl -x https://localhost:8888 -k https://api.appstoreconnect.apple.com/v1/devices
+USAGE
+
+if ARGV.include?('-h') || ARGV.include?('--help')
+  puts(usage)
+  exit
+end
+if ARGV.size != 2
+  puts(usage)
+  exit(1)
+end
+app_port, proxy_port = ARGV
+
+if (pid = fork)
+  proxy = ProxyServer.new({ AppPort: app_port, Port: proxy_port })
+  trap('INT') do
+    proxy.shutdown
+    Process.kill('INT', pid)
+  end
+  proxy.start
+else
+  app = Sinatra::Application
+  app.set(
+    :server_settings,
+    {
+      Port: app_port,
+      SSLEnable: true,
+      SSLCertName: [['CN', 'api.appstoreconnect.apple.com']]
+    }
+  )
+  app.start!
+end
