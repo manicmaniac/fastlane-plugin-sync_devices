@@ -92,7 +92,6 @@ module Fastlane
                     "(#{old_device.platform} -> #{new_device.platform})"
           new(message, old_device, new_device)
         end
-        private_class_method :change_platform
 
         # @param patch [DevicePatch]
         # @param old_device [Spaceship::ConnectAPI::Device]
@@ -111,7 +110,6 @@ module Fastlane
             new_device
           )
         end
-        private_class_method :internal_inconsistency
       end
     end
   end
