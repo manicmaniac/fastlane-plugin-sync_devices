@@ -39,7 +39,7 @@ module Fastlane # rubocop:disable Style/Documentation
         patch = DevicesPatch.new(current_devices, new_devices)
         patch.apply!(dry_run: params[:dry_run])
 
-        UI.success('Successfully registered new devices.')
+        UI.success('Successfully synchronized devices.')
       end
 
       # Authenticates the user with AppStore Connect API or Apple Developer Portal.
