@@ -261,6 +261,7 @@ module Fastlane
                     'the Apple Sample UDID file (%<url>s)'
           new(message, path, line_number: line_number)
         end
+        private_class_method :invalid_headers
 
         # @param path [String]
         # @param line_number [Integer]
@@ -270,6 +271,7 @@ module Fastlane
                     "See Apple's sample/spec here: %<url>s"
           new(message, path, line_number: line_number)
         end
+        private_class_method :columns_too_short
 
         # @param path [String]
         # @param line_number [Integer]
@@ -279,6 +281,7 @@ module Fastlane
                     'the Apple Sample UDID file (%<url>s)'
           new(message, path, line_number: line_number)
         end
+        private_class_method :columns_too_long
 
         # @param entry [String]
         # @param path [String]
@@ -288,6 +291,7 @@ module Fastlane
                     "See Apple's sample/spec here: %<url>s"
           new(message, path, entry: entry)
         end
+        private_class_method :missing_key
 
         # @param udid [String]
         # @param path [String]
@@ -295,6 +299,7 @@ module Fastlane
         def self.invalid_udid(udid, path)
           new("Invalid UDID '#{udid}' at %<location>s, the UDID is not in the correct format", path)
         end
+        private_class_method :invalid_udid
 
         # @param udid [String]
         # @param path [String]
@@ -303,6 +308,7 @@ module Fastlane
           message = "Invalid UDID '#{udid}' at %<location>s, there's another device with the same UDID is defined"
           new(message, path)
         end
+        private_class_method :udid_not_unique
 
         # @param name [String]
         # @param path [String]
@@ -312,6 +318,7 @@ module Fastlane
                     "must be less than or equal to #{DevicesFile::MAX_DEVICE_NAME_LENGTH} characters long"
           new(message, path)
         end
+        private_class_method :device_name_too_long
 
         # @param platform [String]
         # @param path [String]
@@ -319,6 +326,7 @@ module Fastlane
         def self.unknown_platform(platform, path)
           new("Unknown platform '#{platform}' at %<location>s", path)
         end
+        private_class_method :unknown_platform
       end
     end
   end
