@@ -1,18 +1,16 @@
 # frozen_string_literal: true
 
-# MITM Proxy server that redirects SSL access of AppStore Connect API to our mock server.
-
 require 'webrick'
 require 'webrick/httpproxy'
 require 'webrick/https'
-require_relative 'app'
 
 module WEBrick
-  class HTTPRequest
+  class HTTPRequest # rubocop:disable Style/Documentation
     attr_writer :unparsed_uri
   end
 end
 
+# MITM Proxy server that redirects SSL access of AppStore Connect API to our mock server.
 class ProxyServer < WEBrick::HTTPProxyServer
   attr_reader :app_port
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require_relative 'app'
-require_relative 'proxy'
+require_relative '../server/app'
+require_relative '../server/proxy'
 
 usage = <<~USAGE
   Usage: start_server [-h] <APP_PORT> <PROXY_PORT>
