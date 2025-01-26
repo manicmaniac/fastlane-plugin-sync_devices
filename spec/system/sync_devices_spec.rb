@@ -53,7 +53,7 @@ describe 'fastlane-plugin-sync_devices' do
   describe 'fastlane run sync_devices devices_file:/path/to/devices.tsv' do
     around do |example|
       IO.pipe do |reader, writer|
-        pid = spawn_ruby({}, File.expand_path('../support/servers/proxy.rb', __dir__), err: writer)
+        pid = spawn_ruby({}, File.expand_path('../../bin/start_server', __dir__), '4567', '8888', err: writer)
         at_exit { Process.kill('INT', pid) } # In case rspec suddenly dies before cleanup
         Timeout.timeout(10) do
           sleep(0.1) until reader.readline.include?('#start')

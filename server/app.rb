@@ -41,7 +41,7 @@ set :default_content_type, :json
 set :host_authorization, { permitted_hosts: [] }
 
 # https://developer.apple.com/documentation/appstoreconnectapi/list_devices
-get '/v1/devices' do
+get '/v1/devices' do # rubocop:disable Metrics/BlockLength
   unsupported_fields = %i{fields[devices] filter[id] filter[name] filter[platform] filter[status] filter[udid] sort}
   unsupported_fields.each do |field|
     raise NotImplementedError, "#{field} has not been implemented yet" if params.include?(field)

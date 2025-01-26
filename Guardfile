@@ -6,9 +6,10 @@ guard :rspec, cmd: 'bundle exec rspec', run_all: { cmd: 'bundle exec rspec' } do
 
   rspec = dsl.rspec
   watch(rspec.spec_helper) { rspec.spec_dir }
-  watch(%r{^spec/support/(?!(coverage|servers)/).+\.rb$}) { rspec.spec_dir }
-  watch('spec/support/servers/app.rb') { ['spec/support/servers/app_spec.rb', 'spec/system'] }
-  watch('spec/support/servers/proxy.rb') { 'spec/system' }
+  watch(%r{^spec/support/(?!(coverage)/).+\.rb$}) { rspec.spec_dir }
+  watch('bin/start_server') { %w[spec/bin/start_server_spec.rb spec/system] }
+  watch('server/app.rb') { %w[spec/server/app_spec.rb spec/system] }
+  watch('server/proxy.rb') { 'spec/system' }
   watch(rspec.spec_files)
 
   ruby = dsl.ruby
