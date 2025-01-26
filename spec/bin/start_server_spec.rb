@@ -61,15 +61,12 @@ describe 'start_server' do # rubocop:disable RSpec::DescribeClass
     it 'starts the server' do
       url = URI.parse('https://api.appstoreconnect.apple.com/v1/devices')
       proxy = URI.parse('https://localhost:8888')
-
-      http = Net::HTTP.new(url.host, url.port, proxy.host, proxy.port)
-      http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-
-      request = Net::HTTP::Get.new(url.path)
-      response = http.request(request)
-
-      expect(response.code).to eq('200')
+      Net::HTTP.start(url.host, url.port, proxy.host, proxy.port,
+                      use_ssl: true,
+                      verify_mode: OpenSSL::SSL::VERIFY_NONE) do |http|
+        response = http.request_get(url.path)
+        expect(response.code).to eq('200')
+      end
     end
   end
 end

@@ -7,4 +7,7 @@ require 'simplecov'
 
 SimpleCov.command_name(File.basename(Process.argv0))
 SimpleCov.enable_coverage :branch
+# Do not enable `enable_for_subprocesses` because it causes issues with test cases that use nested subprocesses.
+# For more details, refer to '../../../bin/start_server'.
+# SimpleCov.enable_for_subprocesses true
 SimpleCov.at_fork.call(Process.pid)

@@ -38,6 +38,15 @@ if (pid = fork)
   end
   proxy.start
 else
+  # This is a workaround for SimpleCov not working with forked processes.
+  # In a test case, this script is executed after requiring '../spec/support/coverage/simplecov_spawn.rb'.
+  # Initially, I thought it was enough to set `SimpleCov.enable_for_subprocesses = true` in the above script.
+  # However, not only does it not work, but it also causes the `ProxyServer` to return 500 under that setting.
+  # Therefore, I manually call `SimpleCov.at_fork.call(Process.pid)` to resolve the issue.
+  # :nocov:
+  SimpleCov.at_fork.call(Process.pid) if defined?(SimpleCov) # rubocop:disable Require/MissingRequireStatement
+  # :nocov:
+
   require_relative '../server/app'
 
   app = Sinatra::Application
