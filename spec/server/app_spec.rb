@@ -4,9 +4,11 @@ require 'spaceship'
 require 'timeout'
 
 describe 'app' do # rubocop:disable RSpec::DescribeClass
+  include CommandLineHelper
+
   around do |example|
     IO.pipe do |reader, writer|
-      pid = spawn(RbConfig.ruby, File.expand_path('../../server/app.rb', __dir__), err: writer)
+      pid = spawn_ruby({}, File.expand_path('../../server/app.rb', __dir__), err: writer)
       at_exit { Process.kill('INT', pid) } # In case rspec suddenly dies before cleanup
       Timeout.timeout(5) do
         sleep(0.1) until reader.readline.include?('#start')
