@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'open-uri'
 require 'spaceship'
 require 'timeout'
 
@@ -70,6 +71,34 @@ describe 'app' do # rubocop:disable RSpec::DescribeClass
       expect(device.name).to eq 'bar'
       devices = Spaceship::ConnectAPI::Device.all(client: client)
       expect(devices.detect { |d| d.id == device.id }.name).to eq 'bar'
+    end
+
+    aggregate_failures 'get a device' do
+      response = URI('http://localhost:4567/v1/devices/E51BE273E7C5FBA69926D343887715B7').read
+      device = JSON.parse(response, symbolize_names: true)
+      expect(device).to include(
+        {
+          data: {
+            attributes: {
+              addedDate: kind_of(String),
+              deviceClass: nil,
+              model: nil,
+              name: 'bar',
+              platform: 'IOS',
+              status: 'DISABLED',
+              udid: 'UDID'
+            },
+            id: 'E51BE273E7C5FBA69926D343887715B7',
+            type: 'devices',
+            links: {
+              self: 'http://localhost:4567/v1/devices'
+            }
+          },
+          links: {
+            self: 'http://localhost:4567/v1/devices'
+          }
+        }
+      )
     end
   end
 end

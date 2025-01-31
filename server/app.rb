@@ -98,7 +98,9 @@ get '/v1/devices/:id' do |id|
   raise NotImplementedError, 'fields[devices] has not been implemented yet' if params.include?('fields[devices]')
 
   device = devices.detect { |d| d.id == id }
-  unless device
+  if device
+    device_response(device)
+  else
     status 404
     {
       errors: [
@@ -108,7 +110,6 @@ get '/v1/devices/:id' do |id|
       ]
     }.to_json
   end
-  device_response(device)
 end
 
 # https://developer.apple.com/documentation/appstoreconnectapi/modify_a_registered_device
@@ -119,7 +120,11 @@ patch '/v1/devices/:id' do |id|
   raise "path parameter id=#{id} does not match post body id: #{data[:id]}" if data[:id] != id
 
   device = devices.detect { |d| d.id == id }
-  unless device
+  if device
+    device.name = attributes.fetch(:name, device.name)
+    device.status = attributes.fetch(:status, device.status)
+    device_response(device)
+  else
     status 404
     {
       errors: [
@@ -129,7 +134,4 @@ patch '/v1/devices/:id' do |id|
       ]
     }.to_json
   end
-  device.name = attributes.fetch(:name, device.name)
-  device.status = attributes.fetch(:status, device.status)
-  device_response(device)
 end
