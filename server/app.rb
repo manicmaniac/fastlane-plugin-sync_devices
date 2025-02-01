@@ -48,6 +48,7 @@ configure do
   enable :lock
   set :default_content_type, :json
   set :host_authorization, { permitted_hosts: [] }
+  set :show_exceptions, :after_handler
   set :devices, []
 end
 
