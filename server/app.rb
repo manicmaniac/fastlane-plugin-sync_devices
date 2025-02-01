@@ -36,9 +36,11 @@ end
 
 devices = []
 
-enable :lock
-set :default_content_type, :json
-set :host_authorization, { permitted_hosts: [] }
+configure do
+  enable :lock
+  set :default_content_type, :json
+  set :host_authorization, { permitted_hosts: [] }
+end
 
 # https://developer.apple.com/documentation/appstoreconnectapi/list_devices
 get '/v1/devices' do # rubocop:disable Metrics/BlockLength
