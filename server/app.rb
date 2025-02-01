@@ -109,7 +109,9 @@ end
 get '/v1/devices/:id' do |id|
   raise NotImplementedError, 'fields[devices] has not been implemented yet' if params.include?('fields[devices]')
 
-  device = settings.devices.detect(-> { raise DeviceNotFound, id }) { |d| d.id == id }
+  device = settings.devices.detect { |d| d.id == id }
+  raise DeviceNotFound, id unless device
+
   device_response(device)
 end
 
@@ -120,7 +122,9 @@ patch '/v1/devices/:id' do |id|
   attributes = data.fetch(:attributes)
   raise "path parameter id=#{id} does not match post body id: #{data[:id]}" if data[:id] != id
 
-  device = settings.devices.detect(-> { raise DeviceNotFound, id }) { |d| d.id == id }
+  device = settings.devices.detect { |d| d.id == id }
+  raise DeviceNotFound, id unless device
+
   device.name = attributes.fetch(:name, device.name)
   device.status = attributes.fetch(:status, device.status)
   device_response(device)
