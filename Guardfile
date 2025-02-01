@@ -8,7 +8,7 @@ guard :rspec, cmd: 'bundle exec rspec', run_all: { cmd: 'bundle exec rspec' } do
   watch(rspec.spec_helper) { rspec.spec_dir }
   watch(%r{^spec/support/(?!(coverage)/).+\.rb$}) { rspec.spec_dir }
   watch('bin/start_server') { %w[spec/bin/start_server_spec.rb spec/system] }
-  watch('server/app.rb') { %w[spec/server/app_spec.rb spec/system] }
+  watch('server/app.rb') { %w[spec/server/app_spec.rb spec/server/app_system_spec.rb spec/system] }
   watch('server/proxy.rb') { 'spec/system' }
   watch(rspec.spec_files)
 

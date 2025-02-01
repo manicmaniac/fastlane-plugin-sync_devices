@@ -1,104 +1,293 @@
 # frozen_string_literal: true
 
-require 'open-uri'
-require 'spaceship'
-require 'timeout'
+require 'json'
+require 'rack/test'
+require_relative '../../server/app'
 
-describe 'app' do # rubocop:disable RSpec::DescribeClass
-  include CommandLineHelper
+describe 'app' do # rubocop:disable RSpec/DescribeClass
+  # rubocop:disable RSpec/ExampleLength
 
-  around do |example|
-    IO.pipe do |reader, writer|
-      pid = spawn_ruby({}, File.expand_path('../../server/app.rb', __dir__), err: writer)
-      at_exit { Process.kill('INT', pid) } # In case rspec suddenly dies before cleanup
-      Timeout.timeout(5) do
-        sleep(0.1) until reader.readline.include?('#start')
-      end
-      example.run
-      Process.kill('INT', pid)
-      writer.close
-      IO.copy_stream(reader, $stderr) if example.exception
-    end
-  end
+  include Rack::Test::Methods
 
-  let(:token) { instance_double(Spaceship::ConnectAPI::Token, expired?: false, text: '', refresh!: nil) }
-  let(:client) do
-    Class.new(Spaceship::ConnectAPI::Provisioning::Client) do
-      def hostname
-        # https://github.com/fastlane/fastlane/pull/21900
-        if Fastlane::VERSION.to_f < 2.221
-          'http://localhost:4567/v1'
-        else
-          'http://localhost:4567/'
+  let(:app) { Sinatra::Application }
+  let(:devices) { [] }
+  let(:last_response_body_json) { JSON.parse(last_response.body, symbolize_names: true) }
+
+  before { app.settings.devices = devices }
+
+  describe 'GET /v1/devices' do
+    context 'when there are no devices' do
+      it 'returns an empty list of devices' do
+        get '/v1/devices'
+
+        aggregate_failures do
+          expect(last_response).to be_ok
+          expect(last_response_body_json).to eq(
+            {
+              data: [],
+              links: {
+                self: 'http://example.org/v1/devices'
+              },
+              meta: {
+                paging: {
+                  total: 0,
+                  limit: 200
+                }
+              }
+            }
+          )
         end
       end
-    end.new(token: token)
+    end
+
+    context 'when there are devices' do
+      let(:devices) do
+        [
+          Device.new(
+            id: 'ID',
+            name: 'NAME',
+            platform: 'IOS',
+            status: 'ENABLED',
+            udid: 'UDID',
+            addedDate: '2020-01-01T00:00:00Z'
+          )
+        ]
+      end
+
+      it 'returns a list of devices' do
+        get '/v1/devices'
+
+        aggregate_failures do
+          expect(last_response).to be_ok
+          expect(last_response_body_json).to eq(
+            {
+              data: devices.map do |device|
+                {
+                  attributes: device.attributes,
+                  id: device.id,
+                  type: 'devices',
+                  links: {
+                    self: 'http://example.org/v1/devices'
+                  }
+                }
+              end,
+              links: {
+                self: 'http://example.org/v1/devices'
+              },
+              meta: {
+                paging: {
+                  total: 1,
+                  limit: 200
+                }
+              }
+            }
+          )
+        end
+      end
+    end
   end
 
-  example 'user can manipulate devices' do # rubocop:disable RSpec/ExampleLength, RSpec/MultipleExpectations
-    aggregate_failures 'list devices' do
-      devices = Spaceship::ConnectAPI::Device.all(client: client)
-      expect(devices).to be_empty
-    end
+  describe 'POST /v1/devices' do
+    context 'when the request is valid' do
+      before { allow(Time).to receive(:now).and_return(Time.utc(2020, 1, 1)) }
 
-    aggregate_failures 'create a device' do
-      device = Spaceship::ConnectAPI::Device.create(client: client, name: 'foo', platform: 'IOS', udid: 'UDID')
-      expect(device).to have_attributes(
-        {
-          id: kind_of(String),
-          device_class: nil,
-          model: nil,
-          name: 'foo',
-          platform: 'IOS',
-          status: 'ENABLED',
-          udid: 'UDID',
-          added_date: kind_of(String)
-        }
-      )
-      devices = Spaceship::ConnectAPI::Device.all(client: client)
-      expect(devices.map(&:id)).to include(device.id)
-    end
-
-    aggregate_failures 'disable a device' do
-      device = Spaceship::ConnectAPI::Device.disable('UDID', client: client)
-      expect(device.enabled?).to be false
-      devices = Spaceship::ConnectAPI::Device.all(client: client)
-      expect(devices.detect { |d| d.id == device.id }).not_to be_enabled
-    end
-
-    aggregate_failures 'rename a device' do
-      device = Spaceship::ConnectAPI::Device.rename('UDID', 'bar', client: client)
-      expect(device.name).to eq 'bar'
-      devices = Spaceship::ConnectAPI::Device.all(client: client)
-      expect(devices.detect { |d| d.id == device.id }.name).to eq 'bar'
-    end
-
-    aggregate_failures 'get a device' do
-      response = URI('http://localhost:4567/v1/devices/E51BE273E7C5FBA69926D343887715B7').read
-      device = JSON.parse(response, symbolize_names: true)
-      expect(device).to include(
-        {
+      it 'registers a new device' do
+        header 'Content-Type', 'application/json'
+        post '/v1/devices', {
           data: {
             attributes: {
-              addedDate: kind_of(String),
-              deviceClass: nil,
-              model: nil,
-              name: 'bar',
+              name: 'NAME',
               platform: 'IOS',
-              status: 'DISABLED',
               udid: 'UDID'
-            },
-            id: 'E51BE273E7C5FBA69926D343887715B7',
-            type: 'devices',
-            links: {
-              self: 'http://localhost:4567/v1/devices'
             }
-          },
-          links: {
-            self: 'http://localhost:4567/v1/devices'
           }
-        }
-      )
+        }.to_json
+
+        aggregate_failures do
+          expect(last_response).to be_created
+          expect(last_response_body_json).to eq(
+            {
+              data: {
+                attributes: {
+                  addedDate: '2020-01-01T00:00:00Z',
+                  deviceClass: nil,
+                  model: nil,
+                  name: 'NAME',
+                  platform: 'IOS',
+                  status: 'ENABLED',
+                  udid: 'UDID'
+                },
+                id: 'E51BE273E7C5FBA69926D343887715B7',
+                type: 'devices',
+                links: {
+                  self: 'http://example.org/v1/devices'
+                }
+              },
+              links: {
+                self: 'http://example.org/v1/devices'
+              }
+            }
+          )
+          expect(app.settings.devices).to include(an_instance_of(Device))
+        end
+      end
     end
   end
+
+  describe 'GET /v1/devices/:id' do
+    context 'when the device does not exist' do
+      it 'returns a 404 response' do
+        get '/v1/devices/ID'
+
+        aggregate_failures do
+          expect(last_response).to be_not_found
+          expect(last_response_body_json).to eq(
+            {
+              errors: [
+                {
+                  code: 'NOT_FOUND',
+                  status: 404,
+                  id: 'ID'
+                }
+              ]
+            }
+          )
+        end
+      end
+    end
+
+    context 'when the device exists' do
+      let(:devices) do
+        [
+          Device.new(
+            id: 'ID',
+            name: 'NAME',
+            platform: 'IOS',
+            status: 'ENABLED',
+            udid: 'UDID',
+            addedDate: '2020-01-01T00:00:00Z'
+          )
+        ]
+      end
+
+      it 'returns the device' do
+        get '/v1/devices/ID'
+
+        aggregate_failures do
+          expect(last_response).to be_ok
+          expect(last_response_body_json).to eq(
+            {
+              data: {
+                attributes: {
+                  addedDate: '2020-01-01T00:00:00Z',
+                  deviceClass: nil,
+                  model: nil,
+                  name: 'NAME',
+                  platform: 'IOS',
+                  status: 'ENABLED',
+                  udid: 'UDID'
+                },
+                id: 'ID',
+                type: 'devices',
+                links: {
+                  self: 'http://example.org/v1/devices'
+                }
+              },
+              links: {
+                self: 'http://example.org/v1/devices'
+              }
+            }
+          )
+        end
+      end
+    end
+  end
+
+  describe 'PATCH /v1/devices/:id' do
+    context 'when the device does not exist' do
+      it 'returns a 404 response' do
+        header 'Content-Type', 'application/json'
+        patch '/v1/devices/ID', {
+          data: {
+            id: 'ID',
+            attributes: {
+              name: 'NEW NAME'
+            }
+          }
+        }.to_json
+
+        aggregate_failures do
+          expect(last_response).to be_not_found
+          expect(last_response_body_json).to eq(
+            {
+              errors: [
+                {
+                  code: 'NOT_FOUND',
+                  status: 404,
+                  id: 'ID'
+                }
+              ]
+            }
+          )
+        end
+      end
+    end
+
+    context 'when the device exists' do
+      let(:devices) do
+        [
+          Device.new(
+            id: 'ID',
+            name: 'NAME',
+            platform: 'IOS',
+            status: 'ENABLED',
+            udid: 'UDID',
+            addedDate: '2020-01-01T00:00:00Z'
+          )
+        ]
+      end
+
+      it 'modifies the device' do
+        header 'Content-Type', 'application/json'
+        patch '/v1/devices/ID', {
+          data: {
+            id: 'ID',
+            attributes: {
+              name: 'NEW NAME'
+            }
+          }
+        }.to_json
+
+        aggregate_failures do
+          expect(last_response).to be_ok
+          expect(last_response_body_json).to eq(
+            {
+              data: {
+                attributes: {
+                  addedDate: '2020-01-01T00:00:00Z',
+                  deviceClass: nil,
+                  model: nil,
+                  name: 'NEW NAME',
+                  platform: 'IOS',
+                  status: 'ENABLED',
+                  udid: 'UDID'
+                },
+                id: 'ID',
+                type: 'devices',
+                links: {
+                  self: 'http://example.org/v1/devices'
+                }
+              },
+              links: {
+                self: 'http://example.org/v1/devices'
+              }
+            }
+          )
+          expect(app.settings.devices.first.name).to eq 'NEW NAME'
+        end
+      end
+    end
+  end
+
+  # rubocop:enable RSpec/ExampleLength
 end
