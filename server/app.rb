@@ -21,6 +21,16 @@ Device = Struct.new(
   end
 end
 
+# Custom error class for device not found.
+class DeviceNotFound < StandardError
+  attr_reader :device_id
+
+  def initialize(device_id)
+    super("Device not found: #{device_id}")
+    @device_id = device_id
+  end
+end
+
 def device_response(device)
   links = { self: url('/v1/devices') }
   {
@@ -34,11 +44,13 @@ def device_response(device)
   }.to_json
 end
 
-devices = []
-
-enable :lock
-set :default_content_type, :json
-set :host_authorization, { permitted_hosts: [] }
+configure do
+  enable :lock
+  set :default_content_type, :json
+  set :host_authorization, { permitted_hosts: [] }
+  set :show_exceptions, :after_handler
+  set :devices, []
+end
 
 # https://developer.apple.com/documentation/appstoreconnectapi/list_devices
 get '/v1/devices' do # rubocop:disable Metrics/BlockLength
@@ -48,7 +60,7 @@ get '/v1/devices' do # rubocop:disable Metrics/BlockLength
   end
   limit = [params.fetch(:limit, 200).to_i, 200].min
   {
-    data: devices[0..limit].map do |device|
+    data: settings.devices[0..limit].map do |device|
       {
         attributes: device.attributes,
         id: device.id,
@@ -63,7 +75,7 @@ get '/v1/devices' do # rubocop:disable Metrics/BlockLength
     },
     meta: {
       paging: {
-        total: devices.length,
+        total: settings.devices.length,
         limit: limit
       }
     }
@@ -88,7 +100,7 @@ post '/v1/devices' do
     udid,
     Time.now.getutc.strftime('%Y-%m-%dT%H:%M:%SZ')
   )
-  devices << device
+  settings.devices << device
   status 201
   device_response(device)
 end
@@ -97,19 +109,10 @@ end
 get '/v1/devices/:id' do |id|
   raise NotImplementedError, 'fields[devices] has not been implemented yet' if params.include?('fields[devices]')
 
-  device = devices.detect { |d| d.id == id }
-  if device
-    device_response(device)
-  else
-    status 404
-    {
-      errors: [
-        code: 'NOT_FOUND',
-        status: 404,
-        id: id
-      ]
-    }.to_json
-  end
+  device = settings.devices.detect { |d| d.id == id }
+  raise DeviceNotFound, id unless device
+
+  device_response(device)
 end
 
 # https://developer.apple.com/documentation/appstoreconnectapi/modify_a_registered_device
@@ -119,19 +122,21 @@ patch '/v1/devices/:id' do |id|
   attributes = data.fetch(:attributes)
   raise "path parameter id=#{id} does not match post body id: #{data[:id]}" if data[:id] != id
 
-  device = devices.detect { |d| d.id == id }
-  if device
-    device.name = attributes.fetch(:name, device.name)
-    device.status = attributes.fetch(:status, device.status)
-    device_response(device)
-  else
-    status 404
-    {
-      errors: [
-        code: 'NOT_FOUND',
-        status: 404,
-        id: id
-      ]
-    }.to_json
-  end
+  device = settings.devices.detect { |d| d.id == id }
+  raise DeviceNotFound, id unless device
+
+  device.name = attributes.fetch(:name, device.name)
+  device.status = attributes.fetch(:status, device.status)
+  device_response(device)
+end
+
+error DeviceNotFound do
+  status 404
+  {
+    errors: [
+      code: 'NOT_FOUND',
+      status: 404,
+      id: env['sinatra.error'].device_id
+    ]
+  }.to_json
 end
