@@ -13,7 +13,7 @@ describe 'app' do # rubocop:disable RSpec/DescribeClass
   let(:devices) { [] }
   let(:last_response_body_json) { JSON.parse(last_response.body, symbolize_names: true) }
 
-  before { app.settings.devices = devices }
+  before { app.set :devices, devices }
 
   describe 'GET /v1/devices' do
     context 'when there are no devices' do
@@ -44,12 +44,14 @@ describe 'app' do # rubocop:disable RSpec/DescribeClass
       let(:devices) do
         [
           Device.new(
-            id: 'ID',
-            name: 'NAME',
-            platform: 'IOS',
-            status: 'ENABLED',
-            udid: 'UDID',
-            addedDate: '2020-01-01T00:00:00Z'
+            'ID',
+            nil,
+            nil,
+            'NAME',
+            'IOS',
+            'ENABLED',
+            'UDID',
+            '2020-01-01T00:00:00Z'
           )
         ]
       end
@@ -160,12 +162,14 @@ describe 'app' do # rubocop:disable RSpec/DescribeClass
       let(:devices) do
         [
           Device.new(
-            id: 'ID',
-            name: 'NAME',
-            platform: 'IOS',
-            status: 'ENABLED',
-            udid: 'UDID',
-            addedDate: '2020-01-01T00:00:00Z'
+            'ID',
+            nil,
+            nil,
+            'NAME',
+            'IOS',
+            'ENABLED',
+            'UDID',
+            '2020-01-01T00:00:00Z'
           )
         ]
       end
@@ -237,12 +241,14 @@ describe 'app' do # rubocop:disable RSpec/DescribeClass
       let(:devices) do
         [
           Device.new(
-            id: 'ID',
-            name: 'NAME',
-            platform: 'IOS',
-            status: 'ENABLED',
-            udid: 'UDID',
-            addedDate: '2020-01-01T00:00:00Z'
+            'ID',
+            nil,
+            nil,
+            'NAME',
+            'IOS',
+            'ENABLED',
+            'UDID',
+            '2020-01-01T00:00:00Z'
           )
         ]
       end
