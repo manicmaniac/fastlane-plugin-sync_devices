@@ -21,6 +21,16 @@ Device = Struct.new(
   end
 end
 
+# Custom error class for device not found.
+class DeviceNotFound < StandardError
+  attr_reader :device_id
+
+  def initialize(device_id)
+    super("Device not found: #{device_id}")
+    @device_id = device_id
+  end
+end
+
 def device_response(device)
   links = { self: url('/v1/devices') }
   {
@@ -100,18 +110,9 @@ get '/v1/devices/:id' do |id|
   raise NotImplementedError, 'fields[devices] has not been implemented yet' if params.include?('fields[devices]')
 
   device = devices.detect { |d| d.id == id }
-  if device
-    device_response(device)
-  else
-    status 404
-    {
-      errors: [
-        code: 'NOT_FOUND',
-        status: 404,
-        id: id
-      ]
-    }.to_json
-  end
+  raise DeviceNotFound, id unless device
+
+  device_response(device)
 end
 
 # https://developer.apple.com/documentation/appstoreconnectapi/modify_a_registered_device
@@ -122,18 +123,20 @@ patch '/v1/devices/:id' do |id|
   raise "path parameter id=#{id} does not match post body id: #{data[:id]}" if data[:id] != id
 
   device = devices.detect { |d| d.id == id }
-  if device
-    device.name = attributes.fetch(:name, device.name)
-    device.status = attributes.fetch(:status, device.status)
-    device_response(device)
-  else
-    status 404
-    {
-      errors: [
-        code: 'NOT_FOUND',
-        status: 404,
-        id: id
-      ]
-    }.to_json
-  end
+  raise DeviceNotFound, id unless device
+
+  device.name = attributes.fetch(:name, device.name)
+  device.status = attributes.fetch(:status, device.status)
+  device_response(device)
+end
+
+error DeviceNotFound do
+  status 404
+  {
+    errors: [
+      code: 'NOT_FOUND',
+      status: 404,
+      id: env['sinatra.error'].device_id
+    ]
+  }.to_json
 end
