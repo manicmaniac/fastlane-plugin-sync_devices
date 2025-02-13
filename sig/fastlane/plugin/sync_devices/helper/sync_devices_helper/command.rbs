@@ -1,0 +1,42 @@
+module Fastlane
+  module Helper
+    module SyncDevicesHelper
+      module Command
+        class Base
+          attr_accessor device: Spaceship::ConnectAPI::Device
+
+          def initialize: (Spaceship::ConnectAPI::Device device) -> void
+          def run: () -> void
+          def description: () -> String
+        end
+
+        class Noop < Base
+        end
+
+        class Disable < Base
+        end
+
+        class Enable < Base
+        end
+
+        class Rename < Base
+          attr_reader name: String
+          def initialize: (Spaceship::ConnectAPI::Device device, String name) -> void
+        end
+
+        class DisableAndRename < Base
+          attr_reader name: String
+          def initialize: (Spaceship::ConnectAPI::Device device, String name) -> void
+        end
+
+        class EnableAndRename < Base
+          attr_reader name: String
+          def initialize: (Spaceship::ConnectAPI::Device device, String name) -> void
+        end
+
+        class Create < Base
+        end
+      end
+    end
+  end
+end

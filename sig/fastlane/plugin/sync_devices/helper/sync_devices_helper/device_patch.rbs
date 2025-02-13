@@ -1,0 +1,30 @@
+module Fastlane
+  module Helper
+    module SyncDevicesHelper
+      class DevicePatch
+        @old_device: Spaceship::ConnectAPI::Device?
+        @new_device: Spaceship::ConnectAPI::Device?
+
+        attr_reader old_device: Spaceship::ConnectAPI::Device?
+        attr_reader new_device: Spaceship::ConnectAPI::Device?
+
+        def initialize: (Spaceship::ConnectAPI::Device? old_device, Spaceship::ConnectAPI::Device? new_device) -> void
+        def renamed?: () -> bool
+        def enabled?: () -> bool
+        def disabled?: () -> bool
+        def created?: () -> bool
+        def platform_changed?: () -> bool
+        def command: () -> Command::Base
+      end
+
+      class UnsupportedOperation < StandardError
+        attr_reader old_device: Spaceship::ConnectAPI::Device?
+        attr_reader new_device: Spaceship::ConnectAPI::Device?
+
+        def self.change_platform: (Spaceship::ConnectAPI::Device old_device, Spaceship::ConnectAPI::Device new_device) -> UnsupportedOperation
+        def self.internal_inconsistency: (DevicePatch patch, Spaceship::ConnectAPI::Device? old_device, Spaceship::ConnectAPI::Device? new_device) -> UnsupportedOperation
+        def initialize: (String message, Spaceship::ConnectAPI::Device? old_device, Spaceship::ConnectAPI::Device? new_device) -> void
+      end
+    end
+  end
+end

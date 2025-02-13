@@ -1,0 +1,51 @@
+module Spaceship
+  module ConnectAPI
+    module BundleIdPlatform
+      IOS: 'IOS'
+      MAC_OS: 'MAC_OS'
+      ALL: ['IOS', 'MAC_OS']
+
+      def self.map: (String platform) -> ('IOS' | 'MAC_OS')
+    end
+
+    module Model
+      attr_accessor id: String?
+      attr_accessor reverse_attr_map: Hash[Symbol, Symbol]
+
+      def initialize: (String? id, Hash[Symbol, untyped] attributes) -> void
+    end
+
+    class Device
+      include Spaceship::ConnectAPI::Model
+
+      type device_class = 'APPLE_WATCH' | 'IPAD' | 'IPHONE' | 'IPOD' | 'APPLE_TV' | 'MAC' | 'APPLE_VISION_PRO' | 'APPLE_SILICON_MAC' | 'INTEL_MAC'
+      type status = 'ENABLED' | 'DISABLED'
+
+      attr_accessor device_class: device_class
+      attr_accessor model: String
+      attr_accessor name: String
+      attr_accessor platform: String
+      attr_accessor status: status
+      attr_accessor udid: String
+      attr_accessor added_date: String
+
+      def self.type: () -> 'devices'
+      def self.all: (?client: untyped, ?filter: Hash[untyped, untyped], ?includes: untyped, ?fields: untyped, ?limit: Integer, ?sort: untyped) -> Array[Device]
+      def self.device_for_platform: (?platform: String?, ?include_mac_in_profiles: bool, ?client: untyped) -> Array[Device]
+      def self.find_by_udid: (String device_udid, ?client: untyped, ?include_disabled: bool) -> Device?
+      def self.find_or_create: (String device_udid, ?client: untyped, ?name: String?, ?platform: String?) -> Device
+      def self.create: (?client: untyped, ?name: String?, ?platform: String?, ?udid: String?) -> Device
+      def self.modify: (String device_udid, ?client: untyped, ?enabled: bool?, ?new_name: String?) -> Device
+      def self.enable: (String device_udid, ?client: untyped) -> Device
+      def self.disable: (String device_udid, ?client: untyped) -> Device
+      def self.rename: (String device_udid, String new_name, ?client: untyped) -> Device
+
+      def enabled?: () -> bool
+
+      module Status
+        ENABLED: 'ENABLED'
+        DISABLED: 'DISABLED'
+      end
+    end
+  end
+end

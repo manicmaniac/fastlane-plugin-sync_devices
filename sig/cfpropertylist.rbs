@@ -1,0 +1,77 @@
+module CFPropertyList
+  type native_type = (String | Blob | Array[native_type] | Hash[String, native_type])
+
+  def self.guess: (untyped object, ?Hash[untyped, untyped] options) -> CFType
+  def self.native_types: (CFType? object, ?bool keys_as_symbols) -> native_type?
+  def guess: (untyped object, ?Hash[untyped, untyped] options) -> CFType
+  def native_types: (CFType object, ?bool keys_as_symbols) -> native_type
+
+  class List
+    FORMAT_BINARY: 1
+    FORMAT_XML: 2
+    FORMAT_PLAIN: 3
+    FORMAT_AUTO: 0
+
+    attr_accessor filename: String?
+    attr_accessor format: String?
+    attr_accessor value: CFType
+    attr_accessor formatted: bool
+
+    def initialize: (?file: String?) -> void
+    def save: (?String? file, ?untyped format, ?Hash[untyped, untyped] opts) -> void
+  end
+
+  class Blob < String
+  end
+
+  class UidFixnum < Integer
+  end
+
+  class CFType
+    attr_accessor value: untyped
+
+    def initialize: (untyped value) -> void
+    def to_xml: (untyped parser) -> untyped
+    def to_binary: (untyped bplist) -> untyped
+    def to_plain: (untyped plist) -> String
+  end
+
+  class CFString < CFType
+    def quoted: () -> String
+  end
+
+  class CFInteger < CFType
+  end
+
+  class CFReal < CFType
+  end
+
+  class CFDate < CFType
+    def self.date_string: (Time val) -> String
+    def self.parse_date: (String val) -> Time
+
+    def initialize: (?untyped value, ?untyped format) -> void
+    def set_value: (?untyped value, ?untyped format) -> void
+    def get_value: (?untyped format) -> (Integer | Float)
+  end
+
+  class CFBoolean < CFType
+  end
+
+  class CFData < CFType
+    def initialize: (?untyped value, ?untyped format) -> void
+    def encoded_value: () -> String
+    def decoded_value: () -> Blob
+  end
+
+  class CFArray < CFType
+    def initialize: (?Array[untyped] val) -> void
+  end
+
+  class CFDictionary < CFType
+    def initialize: (?Hash[untyped, untyped] value) -> void
+  end
+
+  class CFUid < CFType
+  end
+end

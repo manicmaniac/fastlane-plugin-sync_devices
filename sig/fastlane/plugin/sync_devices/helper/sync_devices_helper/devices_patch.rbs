@@ -1,0 +1,16 @@
+module Fastlane
+  UI: FastlaneCore::UI
+
+  module Helper
+    module SyncDevicesHelper
+      class DevicesPatch
+        attr_reader old_devices: Array[Spaceship::ConnectAPI::Device]
+        attr_reader new_devices: Array[Spaceship::ConnectAPI::Device]
+        attr_reader commands: Array[Command::Base]
+
+        def initialize: (Array[Spaceship::ConnectAPI::Device] old_devices, Array[Spaceship::ConnectAPI::Device] new_devices) -> void
+        def apply!: (?dry_run: bool) -> void
+      end
+    end
+  end
+end

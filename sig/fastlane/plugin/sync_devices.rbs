@@ -1,0 +1,5 @@
+module Fastlane
+  module SyncDevices
+    def self.all_classes: () -> Array[String]
+  end
+end

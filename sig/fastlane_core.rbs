@@ -1,0 +1,3 @@
+module FastlaneCore
+  UI: untyped
+end

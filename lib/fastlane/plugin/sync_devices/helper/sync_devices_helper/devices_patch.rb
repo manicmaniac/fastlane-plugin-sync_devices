@@ -11,7 +11,7 @@ module Fastlane # rubocop:disable Style/Documentation
       class DevicesPatch
         # @return [Spaceship::ConnectAPI::Device]
         attr_reader :old_devices, :new_devices
-        # @return [Array<DevicePatch>]
+        # @return [Array<Command::Base>]
         attr_reader :commands
 
         # @param old_devices [Array<Spaceship::ConnectAPI::Device>]

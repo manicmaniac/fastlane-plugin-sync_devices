@@ -1,0 +1,5 @@
+module Fastlane
+  module SyncDevices
+    VERSION: String
+  end
+end

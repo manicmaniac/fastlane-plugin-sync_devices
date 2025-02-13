@@ -8,7 +8,7 @@ module Fastlane
   module SyncDevices
     # @return [Array<String>]
     def self.all_classes
-      Dir[File.expand_path('**/{actions,helper}/*.rb', __dir__)]
+      Dir[File.expand_path('../**/{actions,helper}/*.rb', __FILE__)]
     end
   end
 end

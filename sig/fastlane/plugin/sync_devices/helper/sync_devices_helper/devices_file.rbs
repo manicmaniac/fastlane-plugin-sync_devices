@@ -1,0 +1,47 @@
+module Fastlane
+  module Helper
+    module SyncDevicesHelper
+      module DevicesFile
+        MAX_DEVICE_NAME_LENGTH: Integer
+
+        def self.load: (String path) -> Array[Spaceship::ConnectAPI::Device]
+        def self.load_tsv: (String path) -> Array[Spaceship::ConnectAPI::Device]
+        def self.load_plist: (String path) -> Array[Spaceship::ConnectAPI::Device]
+        def self.dump: (Array[Spaceship::ConnectAPI::Device] devices, String path, ?format: :tsv | :plist) -> void
+        def self.dump_tsv: (Array[Spaceship::ConnectAPI::Device] devices, String path) -> void
+        def self.dump_plist: (Array[Spaceship::ConnectAPI::Device] devices, String path) -> void
+
+        private
+
+        HEADERS: Array[String]
+        SHORT_HEADERS: Array[String]
+        REQUIRED_KEYS: Array[String]
+
+        def self.validate_devices: (Array[Spaceship::ConnectAPI::Device] devices, String path) -> void
+        def self.parse_platform: (String platform_string, String path) -> String
+        def self.validate_headers: (Array[String] headers, String path) -> void
+        def self.validate_row: (CSV::Row row, String path, Integer line_number) -> void
+        def self.validate_dict_item: (Hash[String, String] item, Integer line_number, String path) -> void
+        def self.udid_regex_for_platform: (String platform) -> Regexp
+      end
+
+      class InvalidDevicesFile < StandardError
+        SAMPLE_FILE_URL: String
+
+        attr_reader path: String
+        attr_reader line_number: Integer?
+        attr_reader entry: String?
+
+        def self.invalid_headers: (String path, Integer line_number) -> InvalidDevicesFile
+        def self.columns_too_short: (String path, Integer line_number) -> InvalidDevicesFile
+        def self.columns_too_long: (String path, Integer line_number) -> InvalidDevicesFile
+        def self.missing_key: (String entry, String path) -> InvalidDevicesFile
+        def self.invalid_udid: (String udid, String path) -> InvalidDevicesFile
+        def self.udid_not_unique: (String udid, String path) -> InvalidDevicesFile
+        def self.device_name_too_long: (String name, String path) -> InvalidDevicesFile
+        def self.unknown_platform: (String platform, String path) -> InvalidDevicesFile
+        def initialize: (String message, String path, ?line_number: Integer?, ?entry: String?) -> void
+      end
+    end
+  end
+end
